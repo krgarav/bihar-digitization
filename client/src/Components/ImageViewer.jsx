@@ -34,7 +34,7 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
-    <div className="p-4 overflow-auto h-screen grid grid-cols-4 gap-4">
+    <div className="p-4  h-screen grid grid-cols-4 gap-4">
       {images.map((img, index) => {
         const isSelected = selectedImages.has(img.name); // Check if the image is selected
         return (

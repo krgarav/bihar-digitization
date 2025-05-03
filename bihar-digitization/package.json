@@ -23,7 +23,9 @@
     "electron-squirrel-startup": "^1.0.1",
     "express": "^5.1.0",
     "pdf-lib": "^1.17.1",
-    "sharp": "^0.34.1"
+    "sequelize": "^6.37.7",
+    "sharp": "^0.34.1",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.0",

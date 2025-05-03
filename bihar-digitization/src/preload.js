@@ -3,5 +3,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
-  getImages: (dirPath) => ipcRenderer.invoke('get-images', dirPath)
+  getImages: (dirPath) => ipcRenderer.invoke('get-images', dirPath),
+  getDonePdfs: () => ipcRenderer.invoke("get-done-pdfs"),
 });

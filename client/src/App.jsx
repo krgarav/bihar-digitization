@@ -4,46 +4,29 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import ImageViewer from "./Components/ImageViewer";
 import axios from "axios";
-
+import Tabswitcher from "./Components/Tabswitcher";
+import { FaFilePdf, FaTools } from "react-icons/fa";
+import AllImageViewer from "./Views/allImageViewer";
+import PdfViewer from "./Views/PdfVierwer";
 function App() {
   const [count, setCount] = useState(0);
-  const [selectedImages, setSelectedImages] = useState(new Set());
+  const [selectedImages, setSelectedImages] = useState(0);
   const [trigger, setTrigger] = useState(false);
-  const saveHandler = async () => {
-
-    try {
-      const imageArray = Array.from(selectedImages); // Convert Set to Array
-
-      const response = await axios.post("http://localhost:4000/process-pdf", {
-        images: imageArray,
-      });
-
-      setTrigger(!trigger)
-      console.log("Response:", response.data);
-      alert("Images moved successfully!");
-    } catch (error) {
-      console.error("Error saving images:", error);
-      alert("Failed to move images.");
-    }
+  const tabs = [
+    { label: "Pdf Maker", icon: FaTools },
+    { label: "All Pdfs", icon: FaFilePdf },
+  ];
+  const handleTabChange = (index) => {
+    console.log("Selected tab index:", index);
+    setSelectedImages(index);
+    // Perform tab-based logic here
   };
+
   return (
     <>
-      <div>
-        <h1 className="text-xl font-bold m-4">Image Browser</h1>
-        <div className="h-[80vh] overflow-auto">
-          <ImageViewer
-            selectedImages={selectedImages}
-            setSelectedImages={setSelectedImages}
-            trigger={trigger}
-          />
-        </div>
-        <div
-          onClick={saveHandler}
-          className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 cursor-pointer transition duration-200"
-        >
-          Save Selected Image
-        </div>
-      </div>
+      <Tabswitcher tabs={tabs} onTabChange={handleTabChange} />
+      {selectedImages === 0 && <AllImageViewer />}
+      {selectedImages === 1 && <PdfViewer />}
     </>
   );
 }

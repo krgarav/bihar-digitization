@@ -71,3 +71,28 @@ ipcMain.handle("get-images", async () => {
     return { error: err.message };
   }
 });
+
+ipcMain.handle("get-done-pdfs", async () => {
+  const dir = path.join(os.homedir(), "Documents", "images", "done");
+  const validExtensions = [".pdf"];
+
+  try {
+    const files = fs.readdirSync(dir);
+    const pdfFiles = files.filter((file) =>
+      validExtensions.includes(path.extname(file).toLowerCase())
+    );
+
+    const base64Pdfs = pdfFiles.map((filename) => {
+      const filePath = path.join(dir, filename);
+      const base64 = fs.readFileSync(filePath).toString("base64");
+      return {
+        name: filename,
+        src: `data:application/pdf;base64,${base64}`,
+      };
+    });
+
+    return base64Pdfs;
+  } catch (err) {
+    return { error: err.message };
+  }
+});

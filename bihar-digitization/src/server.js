@@ -1,10 +1,20 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
 const processRoute = require("./Routes/processpdf");
 const PdfModel = require("./Models/pdfModel");
 const PdfFileModel = require("./Models/pdfFileModel");
 const sequelize = require("./utils/database");
+const os = require("os");
+const sourceDir = path.join(os.homedir(), "Documents", "images", "done");
+
+if (!fs.existsSync(sourceDir)) {
+  fs.mkdirSync(sourceDir, { recursive: true });
+}
+
+app.use("/pdfImages", express.static(sourceDir));
 app.use(express.json());
 app.use(cors("*"));
 

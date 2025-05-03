@@ -1,18 +1,41 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import ImageViewer from "../Components/ImageViewer";
+import { FaPlus, FaTrash } from "react-icons/fa";
 
-const EditPdfModal = ({ show, selectedPdf, onClose, setTrigger, trigger }) => {
+const EditPdfModal = ({ show, selectedPdf, onClose }) => {
   const [pdfName, setPdfName] = React.useState(null);
   const [selectedImages, setSelectedImages] = useState(new Set());
-  // const [trigger, setTrigger] = useState(false);
+  const [trigger, setTrigger] = useState(false);
+  const [addImage, setAddImage] = useState(false);
   useEffect(() => {
     if (selectedPdf?.pdf_Name) {
-      setPdfName(selectedPdf.pdf_Name);
+      setPdfName(selectedPdf.id);
     }
+    setTrigger(!trigger);
   }, [show]);
+  useEffect(() => {
+    setSelectedImages(new Set());
+    setAddImage(false);
+  }, [onClose]);
   console.log(selectedPdf);
   const handleSave = async () => {
+    try {
+      const res = await axios.put(
+        "http://localhost:4000/edit-addimages-to-pdf",
+        {
+          pdfId: pdfName,
+          images: Array.from(selectedImages),
+        }
+      );
+      setSelectedImages(new Set());
+      setPdfName(null);
+      onClose();
+    } catch (error) {
+      console.error("Error saving images:", error);
+      alert("Failed to move images.");
+    }
+
     console.log(pdfName);
   };
   return (
@@ -69,12 +92,36 @@ const EditPdfModal = ({ show, selectedPdf, onClose, setTrigger, trigger }) => {
             </p>
           </div>
 
-          <div className="h-[40vh] overflow-y-auto rounded border border-gray-200 dark:border-gray-700 p-2 bg-gray-50 dark:bg-gray-700">
-            <ImageViewer
-              selectedImages={selectedImages}
-              setSelectedImages={setSelectedImages}
-              trigger={trigger}
-            />
+          <div className=" h-[40vh] overflow-y-auto rounded border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-700 space-y-4">
+            {!addImage && (
+              <div className="flex justify-center gap-4 mb-4">
+                <button
+                  onClick={() => {
+                    setAddImage("addImage");
+                  }}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded shadow transition duration-200"
+                >
+                  <FaPlus />
+                  Add Image
+                </button>
+                <button
+                  onClick={() => {
+                    setAddImage("removeImage");
+                  }}
+                  className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded shadow transition duration-200"
+                >
+                  <FaTrash />
+                  Remove Image
+                </button>
+              </div>
+            )}
+            {addImage === "addImage" && (
+              <ImageViewer
+                selectedImages={selectedImages}
+                setSelectedImages={setSelectedImages}
+                trigger={trigger}
+              />
+            )}
           </div>
 
           {/* Footer */}

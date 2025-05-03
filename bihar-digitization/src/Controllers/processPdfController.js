@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const fsPromises = fs.promises;
 const os = require("os");
 const compressAndConvertImagesToPdf = require("../Services/imagetoPdf");
 const PdfModel = require("../Models/pdfModel");
@@ -139,6 +140,69 @@ exports.getSinglePdf = async (req, res) => {
   }
 };
 
+// exports.editAddImgProcessedPdf = async (req, res) => {
+//   try {
+//     const { images, pdfId } = req.body;
+
+//     if (!Array.isArray(images) || images.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ error: "Images must be a non-empty array" });
+//     }
+
+//     const sourceDir = path.join(os.homedir(), "Documents", "images");
+//     const destDir = path.join(sourceDir, "done");
+
+//     // Ensure 'done' folder exists
+//     if (!fs.existsSync(destDir)) {
+//       fs.mkdirSync(destDir, { recursive: true });
+//     }
+
+//     // Get PDF record
+//     const pdfRecord = await PdfModel.findByPk(pdfId);
+//     if (!pdfRecord) {
+//       return res.status(404).json({ error: "PDF record not found" });
+//     }
+
+//     const pdfName = pdfRecord.pdf_Name || `output-${Date.now()}`;
+//     const pdfPath = path.join(destDir, `${pdfName}.pdf`);
+//     const prevPdfFileRecords = await PdfFileModel.findAll({
+//       where: { pdfId },
+//       attributes: ["file_name"],
+//     });
+//     const prevImageNames = prevPdfFileRecords.map((record) =>
+//       path.join(sourceDir, destDir, record)
+//     );
+//     // Convert selected images to PDF
+//     const imagePaths = images.map((img) => path.join(sourceDir, img));
+//     const allImagePaths = [...prevImageNames, ...imagePaths];
+//     await compressAndConvertImagesToPdf(allImagePaths, pdfPath);
+
+//     // Move original images to "done" folder
+//     images.forEach((imageName) => {
+//       const sourcePath = path.join(sourceDir, imageName);
+//       const destPath = path.join(destDir, imageName);
+//       if (fs.existsSync(sourcePath)) {
+//         fs.renameSync(sourcePath, destPath);
+//       }
+//     });
+
+//     // Save image records to DB
+//     const pdfFileRecords = images.map((fileName) => ({
+//       file_name: fileName,
+//       pdfId: pdfRecord.id,
+//     }));
+//     await PdfFileModel.bulkCreate(pdfFileRecords);
+
+//     return res.json({
+//       message: "PDF created, images moved, and DB updated successfully.",
+//     });
+//   } catch (err) {
+//     console.error("Error processing PDF:", err);
+//     return res.status(500).json({ error: err.message });
+//   }
+// };
+
 exports.editAddImgProcessedPdf = async (req, res) => {
   try {
     const { images, pdfId } = req.body;
@@ -152,7 +216,7 @@ exports.editAddImgProcessedPdf = async (req, res) => {
     const sourceDir = path.join(os.homedir(), "Documents", "images");
     const destDir = path.join(sourceDir, "done");
 
-    // Ensure 'done' folder exists
+    // Ensure "done" folder exists
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
@@ -166,31 +230,54 @@ exports.editAddImgProcessedPdf = async (req, res) => {
     const pdfName = pdfRecord.pdf_Name || `output-${Date.now()}`;
     const pdfPath = path.join(destDir, `${pdfName}.pdf`);
 
-    // Convert selected images to PDF
-    const imagePaths = images.map((img) => path.join(sourceDir, img));
-    await compressAndConvertImagesToPdf(imagePaths, pdfPath);
-
-    // Move original images to "done" folder
-    images.forEach((imageName) => {
-      const sourcePath = path.join(sourceDir, imageName);
-      const destPath = path.join(destDir, imageName);
-      if (fs.existsSync(sourcePath)) {
-        fs.renameSync(sourcePath, destPath);
-      }
+    // Get previously added images (if any)
+    const prevRecords = await PdfFileModel.findAll({
+      where: { pdfId },
+      attributes: ["file_name"],
     });
 
-    // Save image records to DB
-    const pdfFileRecords = images.map((fileName) => ({
-      file_name: fileName,
+    const prevImagePaths = prevRecords.map((r) =>
+      path.join(destDir, r.file_name)
+    );
+    const newImagePaths = images.map((img) => path.join(sourceDir, img));
+    const allImagePaths = [...prevImagePaths, ...newImagePaths];
+
+    // Create PDF
+    await compressAndConvertImagesToPdf(allImagePaths, pdfPath);
+
+    // Move new images to "done"
+    await Promise.all(
+      images.map(async (img) => {
+        const from = path.join(sourceDir, img);
+        const to = path.join(destDir, img);
+        if (fs.existsSync(from)) {
+          await fsPromises.rename(from, to);
+        }
+      })
+    );
+
+    // Insert new image records
+    const newFileRecords = images.map((name) => ({
+      file_name: name,
       pdfId: pdfRecord.id,
     }));
-    await PdfFileModel.bulkCreate(pdfFileRecords);
+    await PdfFileModel.bulkCreate(newFileRecords);
 
     return res.json({
-      message: "PDF created, images moved, and DB updated successfully.",
+      message: "PDF updated and database synced successfully.",
     });
   } catch (err) {
     console.error("Error processing PDF:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Internal server error" });
   }
+};
+
+exports.getAllPdfImages = async (req, res) => {
+  try {
+    const { images, pdfId } = req.query;
+    const pdf = await PdfFileModel.findAll({
+      where: { pdfId: pdfId },
+      attributes: ["file_name"],
+    });
+  } catch (error) {}
 };

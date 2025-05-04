@@ -12,7 +12,19 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
   const debounceTimeout = useRef(null);
   const loaderRef = useRef(null);
   const [hasMore, setHasMore] = useState(true);
+  const searchRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSuggestions([]); // Close suggestions
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   // Fetch all image metadata on mount or trigger change
   useEffect(() => {
     const fetchImages = async () => {
@@ -105,12 +117,15 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
           onChange={(e) => handleSearchChange(e.target.value)}
         />
         {suggestions.length > 0 && (
-          <ul className="absolute top-full left-0 w-full text-black bg-white border border-t-0 border-gray-300 rounded-b-lg shadow-md z-10">
+          <ul
+            ref={searchRef}
+            className="absolute top-full left-0 w-full text-black bg-white border border-t-0 border-gray-300 rounded-b-lg shadow-md z-10"
+          >
             {suggestions.map((name, index) => (
               <li
                 key={index}
                 onClick={() => {
-                  // handleSearchChange(name);
+                  handleSearchChange(name);
                   setSuggestions([]);
                 }}
                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"

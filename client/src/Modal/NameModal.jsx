@@ -4,14 +4,14 @@ import React from "react";
 const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const [pdfName, setPdfName] = React.useState(null);
   const handleSave = async () => {
-    console.log(pdfName);
+    // console.log(pdfName);
     if (!pdfName) {
       alert("Please enter a name for the PDF file.");
       return;
     }
     try {
       const imageArray = Array.from(selectedImages); // Convert Set to Array
-
+     
       const response = await axios.post("http://localhost:4000/process-pdf", {
         images: imageArray,
         name: pdfName,

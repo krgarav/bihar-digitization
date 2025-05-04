@@ -15,6 +15,11 @@ if (!fs.existsSync(sourceDir)) {
 }
 
 app.use("/pdfImages", express.static(sourceDir));
+app.use(
+  "/images",
+  express.static(path.join(os.homedir(), "Documents", "images"))
+);
+
 app.use(express.json());
 app.use(cors("*"));
 

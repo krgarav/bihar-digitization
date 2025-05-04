@@ -4,7 +4,9 @@ const fs = require("fs");
 const os = require("os");
 // Import the Express app and startServer function
 const { app: expressApp, startServer } = require("./server");
-
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
 function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
@@ -18,7 +20,9 @@ function createWindow() {
 
   // Vite dev or dist
   // if (process.env.NODE_ENV === "development") {
-  win.loadURL("http://localhost:5173");
+  win.loadURL("http://localhost:5173").catch((err) => {
+    console.error("Failed to load Vite dev server:", err);
+  });
   win.webContents.openDevTools();
   // } else {
   //   win.loadFile("dist/index.html");
@@ -92,6 +96,36 @@ ipcMain.handle("get-done-pdfs", async () => {
     });
 
     return base64Pdfs;
+  } catch (err) {
+    return { error: err.message };
+  }
+});
+
+// ipcMain.handle("get-image-list", async () => {
+//   const dir = path.join(os.homedir(), "Documents", "images");
+//   const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+//   const files = fs.readdirSync(dir);
+//   const imageFiles = files.filter(file =>
+//     validExtensions.includes(path.extname(file).toLowerCase())
+//   );
+//   return imageFiles; // just names
+// });
+
+ipcMain.handle("get-image-list", async () => {
+  const dir = path.join(os.homedir(), "Documents", "images");
+  const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+
+  try {
+    const files = fs.readdirSync(dir);
+    const imageFiles = files.filter((file) =>
+      validExtensions.includes(path.extname(file).toLowerCase())
+    );
+
+    // Return list of objects with name and thumbnail URL
+    return imageFiles.map((name) => ({
+      name,
+      src: `http://localhost:4000/thumbnail/${encodeURIComponent(name)}`,
+    }));
   } catch (err) {
     return { error: err.message };
   }

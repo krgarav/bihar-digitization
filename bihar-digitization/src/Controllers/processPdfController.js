@@ -5,6 +5,7 @@ const os = require("os");
 const compressAndConvertImagesToPdf = require("../Services/imagetoPdf");
 const PdfModel = require("../Models/pdfModel");
 const PdfFileModel = require("../Models/pdfFileModel");
+const sharp = require('sharp');
 
 // exports.processPdf = async (req, res) => {
 //   try {
@@ -281,3 +282,25 @@ exports.getAllPdfImages = async (req, res) => {
     });
   } catch (error) {}
 };
+
+
+exports.convertImg = (req,res)=>{
+  const imageName = req.params.imageName;
+  const imagePath = path.join(os.homedir(), "Documents", "images", imageName);
+
+  if (!fs.existsSync(imagePath)) {
+    return res.status(404).send("Image not found");
+  }
+
+  sharp(imagePath)
+    .resize(150) // Resize to thumbnail width
+    .toBuffer()
+    .then(buffer => {
+      res.set("Content-Type", "image/jpeg");
+      res.send(buffer);
+    })
+    .catch(err => {
+      console.error("Thumbnail error:", err);
+      res.status(500).send("Failed to create thumbnail");
+    });
+}

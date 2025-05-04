@@ -111,21 +111,38 @@ ipcMain.handle("get-done-pdfs", async () => {
 //   return imageFiles; // just names
 // });
 
-ipcMain.handle("get-image-list", async () => {
+ipcMain.handle("get-image-list", async (event, offset = 0, limit = 50) => {
+  const dir = path.join(os.homedir(), "Documents", "images");
+  const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+  const files = fs.readdirSync(dir);
+
+  const imageFiles = files
+    .filter((file) =>
+      validExtensions.includes(path.extname(file).toLowerCase())
+    )
+    .slice(offset, offset + limit);
+
+  return imageFiles.map((name) => ({
+    name,
+    src: `http://localhost:4000/thumbnail/${encodeURIComponent(name)}`, // or another thumbnail endpoint
+  }));
+});
+
+ipcMain.handle("search-images", async (event, query) => {
   const dir = path.join(os.homedir(), "Documents", "images");
   const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
 
   try {
     const files = fs.readdirSync(dir);
-    const imageFiles = files.filter((file) =>
-      validExtensions.includes(path.extname(file).toLowerCase())
-    );
+    const imageFiles = files.filter((file) => {
+      const ext = path.extname(file).toLowerCase();
+      return (
+        validExtensions.includes(ext) &&
+        file.toLowerCase().includes(query.toLowerCase())
+      );
+    });
 
-    // Return list of objects with name and thumbnail URL
-    return imageFiles.map((name) => ({
-      name,
-      src: `http://localhost:4000/thumbnail/${encodeURIComponent(name)}`,
-    }));
+    return imageFiles; // Only names, not base64 or thumbnails
   } catch (err) {
     return { error: err.message };
   }

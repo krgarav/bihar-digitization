@@ -7,16 +7,20 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
   const [displayedImages, setDisplayedImages] = useState([]); // what’s currently rendered
   const [loadedCount, setLoadedCount] = useState(0);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const debounceTimeout = useRef(null);
   const loaderRef = useRef(null);
+  const [hasMore, setHasMore] = useState(true);
 
   // Fetch all image metadata on mount or trigger change
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const allFiles = await window.api.getImageList();
-        setAllImages(allFiles);
-        setDisplayedImages(allFiles.slice(0, batchSize));
-        setLoadedCount(batchSize);
+        const firstBatch = await window.api.getImageList(0, batchSize);
+        setAllImages(firstBatch); // Consider renaming this to `loadedImages`
+        setDisplayedImages(firstBatch);
+        setLoadedCount(firstBatch.length);
       } catch (err) {
         setError("Failed to load images");
       }
@@ -24,19 +28,25 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
 
     fetchImages();
   }, [trigger]);
-console.log(allImages);
-  // Load more when user scrolls near the bottom
-  const loadMoreImages = useCallback(() => {
-    const nextBatch = allImages.slice(loadedCount, loadedCount + batchSize);
-    setDisplayedImages((prev) => [...prev, ...nextBatch]);
-    setLoadedCount((prev) => prev + batchSize);
-  }, [allImages, loadedCount]);
 
+  const loadMoreImages = useCallback(async () => {
+    try {
+      const newImages = await window.api.getImageList(loadedCount, batchSize);
+      setDisplayedImages((prev) => [...prev, ...newImages]);
+      setLoadedCount((prev) => prev + newImages.length);
+
+      if (newImages.length < batchSize) {
+        setHasMore(false); // Stop loading if fewer than batchSize returned
+      }
+    } catch (err) {
+      console.error("Failed to load more images:", err);
+    }
+  }, [loadedCount, batchSize]);
   // Use Intersection Observer to trigger loading more
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && loadedCount < allImages.length) {
+        if (entries[0].isIntersecting && hasMore) {
           loadMoreImages();
         }
       },
@@ -48,7 +58,7 @@ console.log(allImages);
     return () => {
       if (loaderRef.current) observer.unobserve(loaderRef.current);
     };
-  }, [loadMoreImages]);
+  }, [loadMoreImages, hasMore]);
 
   const handleImageClick = (imgName) => {
     setSelectedImages((prev) => {
@@ -57,42 +67,93 @@ console.log(allImages);
       return updated;
     });
   };
+  console.log(suggestions);
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(async () => {
+      if (value.trim() === "") {
+        setDisplayedImages(allImages); // Reset to full list
+        setSearchQuery(null);
+        setSuggestions([]);
+
+        return;
+      }
+
+      const filenames = await window.api.searchImages(value); // get filenames from backend
+      const filteredImages = allImages.filter((img) =>
+        filenames.includes(img.name)
+      );
+
+      setDisplayedImages(filteredImages);
+      setSuggestions(filenames.slice(0, 5)); // just names for suggestions
+    }, 300);
+  };
 
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
-    <div className="p-4 h-screen  grid grid-cols-4 gap-4">
-      {displayedImages.map((img, index) => {
-        const isSelected = selectedImages.has(img.name);
-        return (
-          <div
-            key={index}
-            className="flex flex-col items-center border p-2 rounded shadow hover:shadow-lg"
-            onClick={() => handleImageClick(img.name)}
-          >
-            <div className="relative">
-              <img
-                src={img.src}
-                alt={img.name}
-                className="w-full h-40 object-cover rounded"
-              />
-              <div className="absolute top-2 right-2">
-                {isSelected ? (
-                  <FaCheckCircle className="text-green-500 text-xl" />
-                ) : (
-                  <FaRegCircle className="text-gray-500 text-xl" />
-                )}
+    <div className="p-4 h-screen ">
+      <div className="mb-4 max-w-md mx-auto relative">
+        <input
+          type="text"
+          placeholder="Search images by name..."
+          className="w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          // value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+        {suggestions.length > 0 && (
+          <ul className="absolute top-full left-0 w-full text-black bg-white border border-t-0 border-gray-300 rounded-b-lg shadow-md z-10">
+            {suggestions.map((name, index) => (
+              <li
+                key={index}
+                onClick={() => {
+                  // handleSearchChange(name);
+                  setSuggestions([]);
+                }}
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+              >
+                {name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {displayedImages.map((img, index) => {
+          const isSelected = selectedImages.has(img.name);
+          return (
+            <div
+              key={index}
+              className="flex flex-col items-center border p-2 rounded shadow hover:shadow-lg"
+              onClick={() => handleImageClick(img.name)}
+            >
+              <div className="relative">
+                <img
+                  src={img.src}
+                  alt={img.name}
+                  className="w-full h-40 object-cover rounded"
+                />
+                <div className="absolute top-2 right-2">
+                  {isSelected ? (
+                    <FaCheckCircle className="text-green-500 text-xl" />
+                  ) : (
+                    <FaRegCircle className="text-gray-500 text-xl" />
+                  )}
+                </div>
+              </div>
+              <div
+                className="mt-2 text-sm text-center truncate w-full"
+                title={img.name}
+              >
+                {img.name}
               </div>
             </div>
-            <div
-              className="mt-2 text-sm text-center truncate w-full"
-              title={img.name}
-            >
-              {img.name}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
       <div
         ref={loaderRef}
         className="h-10 col-span-4 flex justify-center items-center"

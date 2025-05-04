@@ -2,9 +2,9 @@ const path = require("path");
 const fs = require("fs");
 const fsPromises = fs.promises;
 const os = require("os");
-const compressAndConvertImagesToPdf = require("../Services/imagetoPdf");
+const compressAndConvertImagesToPdf = require("../Services/imageToPdf.js");
 const PdfModel = require("../Models/pdfModel");
-const PdfFileModel = require("../Models/pdfFileModel");
+const PdfFileModel = require("../Models/pdfFileModel.js");
 const sharp = require('sharp');
 
 // exports.processPdf = async (req, res) => {

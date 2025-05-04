@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('api', {
   getImages: () => ipcRenderer.invoke('get-images'),
   getDonePdfs: () => ipcRenderer.invoke("get-done-pdfs"),
   getImageList: () => ipcRenderer.invoke('get-image-list'),
+  searchImages: (query) => ipcRenderer.invoke('search-images', query),
 });

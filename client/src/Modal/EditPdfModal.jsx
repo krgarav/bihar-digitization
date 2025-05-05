@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import ImageViewer from "../Components/ImageViewer";
 import { FaPlus, FaTrash } from "react-icons/fa";
+import RemoveImageViewer from "../Components/RemoveImageViewer";
 
 const EditPdfModal = ({ show, selectedPdf, onClose }) => {
   const [pdfName, setPdfName] = React.useState(null);
@@ -18,7 +19,7 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
     setSelectedImages(new Set());
     setAddImage(false);
   }, [onClose]);
-  console.log(selectedPdf);
+
   const handleSave = async () => {
     try {
       const res = await axios.put(
@@ -38,6 +39,7 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
 
     console.log(pdfName);
   };
+
   return (
     <div
       id="default-modal"
@@ -120,6 +122,14 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
                 selectedImages={selectedImages}
                 setSelectedImages={setSelectedImages}
                 trigger={trigger}
+              />
+            )}
+            {addImage === "removeImage" && (
+              <RemoveImageViewer
+                selectedImages={selectedImages}
+                setSelectedImages={setSelectedImages}
+                trigger={trigger}
+                pdfId={pdfName}
               />
             )}
           </div>

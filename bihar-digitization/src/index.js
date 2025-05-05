@@ -101,31 +101,41 @@ ipcMain.handle("get-done-pdfs", async () => {
   }
 });
 
-// ipcMain.handle("get-image-list", async () => {
-//   const dir = path.join(os.homedir(), "Documents", "images");
-//   const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
-//   const files = fs.readdirSync(dir);
-//   const imageFiles = files.filter(file =>
-//     validExtensions.includes(path.extname(file).toLowerCase())
-//   );
-//   return imageFiles; // just names
-// });
-
 ipcMain.handle("get-image-list", async (event, offset = 0, limit = 50) => {
-  const dir = path.join(os.homedir(), "Documents", "images");
-  const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
-  const files = fs.readdirSync(dir);
+  try {
+    const dir = path.join(os.homedir(), "Documents", "images");
+    const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
 
-  const imageFiles = files
-    .filter((file) =>
-      validExtensions.includes(path.extname(file).toLowerCase())
-    )
-    .slice(offset, offset + limit);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
-  return imageFiles.map((name) => ({
-    name,
-    src: `http://localhost:4000/thumbnail/${encodeURIComponent(name)}`, // or another thumbnail endpoint
-  }));
+    const files = await fs.promises.readdir(dir);
+
+    const imageFiles = files
+      .filter((file) =>
+        validExtensions.includes(path.extname(file).toLowerCase())
+      )
+      .sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+      );
+
+    const pagedFiles = imageFiles.slice(offset, offset + limit);
+
+    console.log("OFFSET:", offset, "LIMIT:", limit);
+    console.log(
+      "RETURNING:",
+      pagedFiles.map((f) => f)
+    );
+
+    return pagedFiles.map((name) => ({
+      name,
+      src: `http://localhost:4000/thumbnail/${encodeURIComponent(name)}`,
+    }));
+  } catch (err) {
+    console.error("Failed to list image files:", err);
+    return [];
+  }
 });
 
 ipcMain.handle("search-images", async (event, query) => {
@@ -146,4 +156,14 @@ ipcMain.handle("search-images", async (event, query) => {
   } catch (err) {
     return { error: err.message };
   }
+});
+
+ipcMain.handle("get-done-image-list", async () => {
+  const dir = path.join(os.homedir(), "Documents", "images", "done");
+  const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+  const files = fs.readdirSync(dir);
+  const imageFiles = files.filter((file) =>
+    validExtensions.includes(path.extname(file).toLowerCase())
+  );
+  return imageFiles; // just names
 });

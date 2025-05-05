@@ -19,6 +19,10 @@ app.use(
   "/images",
   express.static(path.join(os.homedir(), "Documents", "images"))
 );
+app.use(
+  "/pdfImages",
+  express.static(path.join(os.homedir(), "Documents", "images","done"))
+);
 
 app.use(express.json());
 app.use(cors("*"));

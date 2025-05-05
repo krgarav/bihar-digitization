@@ -5,7 +5,7 @@ const os = require("os");
 const compressAndConvertImagesToPdf = require("../Services/imageToPdf.js");
 const PdfModel = require("../Models/pdfModel");
 const PdfFileModel = require("../Models/pdfFileModel.js");
-const sharp = require('sharp');
+const sharp = require("sharp");
 
 // exports.processPdf = async (req, res) => {
 //   try {
@@ -283,8 +283,7 @@ exports.getAllPdfImages = async (req, res) => {
   } catch (error) {}
 };
 
-
-exports.convertImg = (req,res)=>{
+exports.convertImg = (req, res) => {
   const imageName = req.params.imageName;
   const imagePath = path.join(os.homedir(), "Documents", "images", imageName);
 
@@ -295,12 +294,38 @@ exports.convertImg = (req,res)=>{
   sharp(imagePath)
     .resize(150) // Resize to thumbnail width
     .toBuffer()
-    .then(buffer => {
+    .then((buffer) => {
       res.set("Content-Type", "image/jpeg");
       res.send(buffer);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Thumbnail error:", err);
       res.status(500).send("Failed to create thumbnail");
     });
-}
+};
+
+exports.editRemoveImgProcessedPdf = async (req, res) => {
+  try {
+    const { pdfId } = req.query;
+
+    // Get PDF record
+    const pdfRecord = await PdfModel.findByPk(pdfId);
+    if (!pdfRecord) {
+      return res.status(404).json({ error: "PDF record not found" });
+    }
+
+    // Get previously added images (if any)
+    const prevRecords = await PdfFileModel.findAll({
+      where: { pdfId },
+      attributes: ["file_name"],
+    });
+
+    return res.json({
+      message: "PDF updated and database synced successfully.",
+      pdfNames: prevRecords,
+    });
+  } catch (err) {
+    console.error("Error processing PDF:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};

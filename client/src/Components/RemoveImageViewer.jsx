@@ -1,7 +1,13 @@
+import axios from "axios";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
-const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
+const RemoveImageViewer = ({
+  selectedImages,
+  setSelectedImages,
+  trigger,
+  pdfId,
+}) => {
   const batchSize = 50;
   const [allImages, setAllImages] = useState([]); // full list of image metadata
   const [displayedImages, setDisplayedImages] = useState([]); // what’s currently rendered
@@ -13,7 +19,6 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
   const loaderRef = useRef(null);
   const [hasMore, setHasMore] = useState(true);
   const searchRef = useRef(null);
-  const hasMounted = useRef(false);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -30,58 +35,23 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const firstBatch = await window.api.getImageList(0, batchSize);
+        const firstBatch = await axios.get(
+          "http://localhost:4000/edit-remove-images-to-pdf?pdfId=" + pdfId
+        );
         console.log(firstBatch);
-        setAllImages(firstBatch); // Consider renaming this to `loadedImages`
-        setDisplayedImages(firstBatch);
-        setLoadedCount(firstBatch.length);
+        const result = firstBatch?.data?.pdfNames;
+        console.log(result);
+        setAllImages(result); // Consider renaming this to `loadedImages`
+        setDisplayedImages(result);
+        setLoadedCount(result.length);
       } catch (err) {
+        console.error("Failed to load images:", err);
         setError("Failed to load images");
       }
     };
 
     fetchImages();
   }, [trigger]);
-
-  const loadMoreImages = useCallback(async () => {
-    try {
-      const newImages = await window.api.getImageList(loadedCount, batchSize);
-      setDisplayedImages((prev) => [...prev, ...newImages]);
-      setLoadedCount((prev) => prev + newImages.length);
-
-      if (newImages.length < batchSize) {
-        setHasMore(false); // Stop loading if fewer than batchSize returned
-      }
-    } catch (err) {
-      console.error("Failed to load more images:", err);
-    }
-  }, [loadedCount, batchSize]);
-
-  // Use Intersection Observer to trigger loading more
-  useEffect(() => {
-    if (!loaderRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          if (hasMounted.current) {
-            console.log("Loading more images...");
-            loadMoreImages();
-          } else {
-            hasMounted.current = true; // skip first time
-          }
-        }
-      },
-      { threshold: 1 }
-    );
-
-    const target = loaderRef.current;
-    observer.observe(target);
-
-    return () => {
-      if (target) observer.unobserve(target);
-    };
-  }, [loadMoreImages, hasMore]);
 
   const handleImageClick = (imgName) => {
     setSelectedImages((prev) => {
@@ -90,6 +60,7 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
       return updated;
     });
   };
+  console.log(suggestions);
   const handleSearchChange = (value) => {
     setSearchQuery(value);
 
@@ -113,11 +84,11 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
       setSuggestions(filenames.slice(0, 5)); // just names for suggestions
     }, 300);
   };
-
+  console.log(error);
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
-    <div className="p-4  h-[65vh] overflow-y-auto">
+    <div className="p-4 h-screen ">
       <div className="mb-4 max-w-md mx-auto relative">
         <input
           type="text"
@@ -148,16 +119,19 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {displayedImages.map((img, index) => {
-          const isSelected = selectedImages.has(img.name);
+          const isSelected = selectedImages.has(img);
+          const imgName = img["file_name"];
+
           return (
             <div
               key={index}
               className="flex flex-col items-center border p-2 rounded shadow hover:shadow-lg"
-              onClick={() => handleImageClick(img.name)}
+              onClick={() => handleImageClick(img["file_name"])}
             >
               <div className="relative">
                 <img
-                  src={img.src}
+                  src={`http://localhost:4000/pdfImages/${imgName}
+                  `}
                   alt={img.name}
                   className="w-full h-40 object-cover rounded"
                 />
@@ -171,22 +145,16 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
               </div>
               <div
                 className="mt-2 text-sm text-center truncate w-full"
-                title={img.name}
+                title={img["file_name"]}
               >
-                {img.name}
+                {img["file_name"]}
               </div>
             </div>
           );
         })}
       </div>
-      <div
-        ref={loaderRef}
-        className="h-10 col-span-4 flex justify-center items-center"
-      >
-        {loadedCount < allImages.length && <span>Loading more images...</span>}
-      </div>
     </div>
   );
 };
 
-export default ImageViewer;
+export default RemoveImageViewer;

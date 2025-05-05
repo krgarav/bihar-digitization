@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import ImageViewer from "../Components/ImageViewer";
-import axios from "axios";
 import NameModal from "../Modal/NameModal";
 
 const AllImageViewer = () => {
@@ -30,14 +29,16 @@ const AllImageViewer = () => {
         </div>
 
         {/* Action Button */}
-        <div className="flex justify-end">
-          <button
-            onClick={saveHandler}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg shadow-md transition duration-200"
-          >
-            📄 Create PDF of Selected Images
-          </button>
-        </div>
+        {selectedImages.size > 0 && (
+          <div className="flex justify-end">
+            <button
+              onClick={saveHandler}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg shadow-md transition duration-200"
+            >
+              📄 Create PDF of Selected Images
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Modal Component */}

@@ -29,7 +29,19 @@ function App() {
       <Tabswitcher tabs={tabs} onTabChange={handleTabChange} />
       {selectedImages === 0 && <AllImageViewer />}
       {selectedImages === 1 && <PdfViewer />}
-      <ToastContainer />
+      <ToastContainer
+        // position="top-center"
+        // autoClose={2000}
+        // hideProgressBar={false}
+        // newestOnTop
+        // closeOnClick={false}
+        // rtl={false}
+        // pauseOnFocusLoss={false}
+        // draggable
+        // pauseOnHover
+        // theme="dark"
+        // transition={Slide}
+      />
     </>
   );
 }

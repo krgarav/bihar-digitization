@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { ImageViewer } from "react-iv-viewer";
 import "react-iv-viewer/dist/react-iv-viewer.css";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { toast } from "react-toastify";
 const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const [pdfName, setPdfName] = React.useState(null);
   const [imageArray, setImageArray] = React.useState([]);
@@ -20,25 +21,32 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
       setImageArray(Array.from(selectedImages));
     }
   }, [selectedImages]);
+
   const handleSave = async () => {
-    // console.log(pdfName);
     if (!pdfName) {
-      alert("Please enter a name for the PDF file.");
+      console.error("PDF name is empty.");
+      toast.error("Please enter a valid name for the PDF file.");
       return;
     }
+
     try {
-      const imageArray = Array.from(selectedImages); // Convert Set to Array
-      console.log(imageArray);
+      const imageArray = Array.from(selectedImages);
+      if (imageArray.length === 0) {
+        toast.error("No images selected.");
+        return;
+      }
+
       const response = await axios.post("http://localhost:4000/process-pdf", {
         images: imageArray,
-        name: pdfName,
+        name: pdfName.trim(),
       });
-      setTrigger(!trigger);
+
+      setTrigger((prev) => !prev);
       onClose();
-      alert("Images moved successfully!");
+      toast.success("PDF created successfully!");
     } catch (error) {
       console.error("Error saving images:", error);
-      alert("Failed to move images.");
+      toast.error("Failed to create PDF.");
     }
   };
 

@@ -8,6 +8,8 @@ import Tabswitcher from "./Components/Tabswitcher";
 import { FaFilePdf, FaTools } from "react-icons/fa";
 import AllImageViewer from "./Views/allImageViewer";
 import PdfViewer from "./Views/PdfVierwer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 function App() {
   const [count, setCount] = useState(0);
   const [selectedImages, setSelectedImages] = useState(0);
@@ -27,6 +29,7 @@ function App() {
       <Tabswitcher tabs={tabs} onTabChange={handleTabChange} />
       {selectedImages === 0 && <AllImageViewer />}
       {selectedImages === 1 && <PdfViewer />}
+      <ToastContainer />
     </>
   );
 }

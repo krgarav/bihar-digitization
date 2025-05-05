@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -24,9 +24,7 @@ function createWindow() {
     console.error("Failed to load Vite dev server:", err);
   });
   win.webContents.openDevTools();
-  // } else {
-  //   win.loadFile("dist/index.html");
-  // }
+  Menu.setApplicationMenu(null);
 }
 
 // Start Electron app

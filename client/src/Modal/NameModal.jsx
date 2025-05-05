@@ -1,8 +1,25 @@
 import axios from "axios";
-import React from "react";
-
+import React, { useEffect } from "react";
+import { ImageViewer } from "react-iv-viewer";
+import "react-iv-viewer/dist/react-iv-viewer.css";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const [pdfName, setPdfName] = React.useState(null);
+  const [imageArray, setImageArray] = React.useState([]);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? imageArray.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === imageArray.length - 1 ? 0 : prev + 1));
+  };
+  useEffect(() => {
+    if (selectedImages) {
+      setImageArray(Array.from(selectedImages));
+    }
+  }, [selectedImages]);
   const handleSave = async () => {
     // console.log(pdfName);
     if (!pdfName) {
@@ -11,7 +28,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
     }
     try {
       const imageArray = Array.from(selectedImages); // Convert Set to Array
-     
+      console.log(imageArray);
       const response = await axios.post("http://localhost:4000/process-pdf", {
         images: imageArray,
         name: pdfName,
@@ -24,6 +41,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
       alert("Failed to move images.");
     }
   };
+
   return (
     <div
       id="default-modal"
@@ -82,9 +100,29 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
               the document.
             </p>
           </div>
-
+          <div className="relative w-[500px]">
+            <ImageViewer
+              img={`http://localhost:4000/images/${imageArray[currentIndex]}`}
+              width="640px"
+            />
+          </div>
           {/* Footer */}
           <div className="flex justify-end p-4 md:p-5 border-t border-gray-200 dark:border-gray-600">
+            {/* Left Arrow Button */}
+            <button
+              onClick={handlePrev}
+              // className="absolute top-1/2 left-0 -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
+            >
+              <FaArrowLeft size={20} />
+            </button>
+
+            {/* Right Arrow Button */}
+            <button
+              onClick={handleNext}
+              // className="absolute top-1/2 right-0 -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
+            >
+              <FaArrowRight size={20} />
+            </button>
             <button
               type="button"
               className="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-pointer transition duration-200"

@@ -45,7 +45,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log("✅ Database connected successfully.");
 
-    await sequelize.sync({ force: true }); // or { force: true } to drop & recreate tables
+    await sequelize.sync({ force: false }); // or { force: true } to drop & recreate tables
     console.log("📦 Models synchronized with database.");
 
     // Optional: seed admin user or other initial data here

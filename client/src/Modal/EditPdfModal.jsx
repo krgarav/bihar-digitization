@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import ImageViewer from "../Components/ImageViewer";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import RemoveImageViewer from "../Components/RemoveImageViewer";
+import { toast } from "react-toastify";
 
 const EditPdfModal = ({ show, selectedPdf, onClose }) => {
   const [pdfName, setPdfName] = React.useState(null);
@@ -35,8 +36,8 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
         setSelectedImages(new Set());
         setPdfName(null);
         onClose();
+        toast.success("Images added to PDF successfully!");
       } else {
-        console.log("remove image", pdfName, selectedImages);
         const res = await axios.post(
           "http://localhost:4000/remove-pdf-images",
           {
@@ -44,9 +45,10 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
             images: Array.from(selectedImages),
           }
         );
-        // setSelectedImages(new Set());
-        // setPdfName(null);
-        // onClose();
+        setSelectedImages(new Set());
+        setPdfName(null);
+        onClose();
+        toast.success("Images removed from PDF successfully!");
       }
     } catch (error) {
       console.error("Error saving images:", error);

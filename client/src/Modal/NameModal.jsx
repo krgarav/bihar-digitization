@@ -101,31 +101,38 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
             </p>
           </div>
           <div className="relative w-[500px]">
-            <ImageViewer
-              img={`http://localhost:4000/images/${imageArray[currentIndex]}`}
-              width="640px"
-            />
+            {imageArray.length > 0 && (
+              <ImageViewer
+                img={`http://localhost:4000/images/${imageArray[currentIndex]}`}
+                width="640px"
+              />
+            )}
+            <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
+              {imageArray[currentIndex]}
+            </p>
           </div>
           {/* Footer */}
-          <div className="flex justify-end p-4 md:p-5 border-t border-gray-200 dark:border-gray-600">
-            {/* Left Arrow Button */}
-            <button
-              onClick={handlePrev}
-              // className="absolute top-1/2 left-0 -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
-            >
-              <FaArrowLeft size={20} />
-            </button>
+          <div className="flex items-center justify-between p-4 md:p-5 border-t border-gray-200 dark:border-gray-600">
+            {/* Centered Arrows */}
+            <div className="flex justify-center flex-grow gap-4">
+              <button
+                onClick={handlePrev}
+                className="cursor-pointer bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
+              >
+                <FaArrowLeft size={20} />
+              </button>
+              <button
+                onClick={handleNext}
+                className="cursor-pointer bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
+              >
+                <FaArrowRight size={20} />
+              </button>
+            </div>
 
-            {/* Right Arrow Button */}
-            <button
-              onClick={handleNext}
-              // className="absolute top-1/2 right-0 -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
-            >
-              <FaArrowRight size={20} />
-            </button>
+            {/* Save Button aligned right */}
             <button
               type="button"
-              className="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-pointer transition duration-200"
+              className="ml-4 px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition duration-200"
               onClick={handleSave}
             >
               Save PDF

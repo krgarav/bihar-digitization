@@ -11,6 +11,7 @@ const PdfViewer = () => {
   const [trigger, setTrigger] = useState(false);
   const [show, setShow] = useState(false);
   const [selectedPdf, setsSelectedPdfs] = useState(null);
+
   useEffect(() => {
     const fetchImages = async () => {
       try {

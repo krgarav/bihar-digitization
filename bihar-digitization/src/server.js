@@ -8,6 +8,7 @@ const PdfModel = require("./Models/pdfModel");
 const PdfFileModel = require("./Models/pdfFileModel");
 const sequelize = require("./utils/database");
 const os = require("os");
+const builtPath = path.join(__dirname, "./dist");
 const sourceDir = path.join(os.homedir(), "Documents", "images", "done");
 
 if (!fs.existsSync(sourceDir)) {
@@ -21,12 +22,13 @@ app.use(
 );
 app.use(
   "/pdfImages",
-  express.static(path.join(os.homedir(), "Documents", "images","done"))
+  express.static(path.join(os.homedir(), "Documents", "images", "done"))
 );
 
 app.use(express.json());
 app.use(cors("*"));
-
+console.log(builtPath);
+app.use(express.static(builtPath));
 app.use(processRoute);
 
 PdfModel.hasMany(PdfFileModel, {
@@ -43,7 +45,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log("✅ Database connected successfully.");
 
-    await sequelize.sync({ force: false }); // or { force: true } to drop & recreate tables
+    await sequelize.sync({ force: true }); // or { force: true } to drop & recreate tables
     console.log("📦 Models synchronized with database.");
 
     // Optional: seed admin user or other initial data here

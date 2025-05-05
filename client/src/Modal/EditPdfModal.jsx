@@ -9,12 +9,14 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
   const [selectedImages, setSelectedImages] = useState(new Set());
   const [trigger, setTrigger] = useState(false);
   const [addImage, setAddImage] = useState(false);
+
   useEffect(() => {
     if (selectedPdf?.pdf_Name) {
       setPdfName(selectedPdf.id);
     }
     setTrigger(!trigger);
   }, [show]);
+
   useEffect(() => {
     setSelectedImages(new Set());
     setAddImage(false);
@@ -22,22 +24,34 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
 
   const handleSave = async () => {
     try {
-      const res = await axios.put(
-        "http://localhost:4000/edit-addimages-to-pdf",
-        {
-          pdfId: pdfName,
-          images: Array.from(selectedImages),
-        }
-      );
-      setSelectedImages(new Set());
-      setPdfName(null);
-      onClose();
+      if (addImage === "addImage") {
+        const res = await axios.put(
+          "http://localhost:4000/edit-addimages-to-pdf",
+          {
+            pdfId: pdfName,
+            images: Array.from(selectedImages),
+          }
+        );
+        setSelectedImages(new Set());
+        setPdfName(null);
+        onClose();
+      } else {
+        console.log("remove image", pdfName, selectedImages);
+        const res = await axios.post(
+          "http://localhost:4000/remove-pdf-images",
+          {
+            pdfId: pdfName,
+            images: Array.from(selectedImages),
+          }
+        );
+        // setSelectedImages(new Set());
+        // setPdfName(null);
+        // onClose();
+      }
     } catch (error) {
       console.error("Error saving images:", error);
       alert("Failed to move images.");
     }
-
-    console.log(pdfName);
   };
 
   return (
@@ -135,15 +149,19 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end p-4 md:p-5 border-t border-gray-200 dark:border-gray-600">
-            <button
-              type="button"
-              className="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-pointer transition duration-200"
-              onClick={handleSave}
-            >
-              Update PDF
-            </button>
-          </div>
+          {addImage && (
+            <div className="flex justify-end p-4 md:p-5 border-t border-gray-200 dark:border-gray-600">
+              <button
+                type="button"
+                className="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-pointer transition duration-200"
+                onClick={handleSave}
+              >
+                {addImage === "addImage"
+                  ? "Add Images to Pdf"
+                  : "remove Images from Pdf"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -119,14 +119,14 @@ const RemoveImageViewer = ({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {displayedImages.map((img, index) => {
-          const isSelected = selectedImages.has(img);
+          const isSelected = selectedImages.has(img.id);
           const imgName = img["file_name"];
 
           return (
             <div
               key={index}
               className="flex flex-col items-center border p-2 rounded shadow hover:shadow-lg"
-              onClick={() => handleImageClick(img["file_name"])}
+              onClick={() => handleImageClick(img.id)}
             >
               <div className="relative">
                 <img
@@ -137,7 +137,7 @@ const RemoveImageViewer = ({
                 />
                 <div className="absolute top-2 right-2">
                   {isSelected ? (
-                    <FaCheckCircle className="text-green-500 text-xl" />
+                    <FaCheckCircle className="text-red-500 text-xl" />
                   ) : (
                     <FaRegCircle className="text-gray-500 text-xl" />
                   )}

@@ -317,12 +317,76 @@ exports.editRemoveImgProcessedPdf = async (req, res) => {
     // Get previously added images (if any)
     const prevRecords = await PdfFileModel.findAll({
       where: { pdfId },
-      attributes: ["file_name"],
+      attributes: ["file_name", "id"],
     });
 
     return res.json({
       message: "PDF updated and database synced successfully.",
       pdfNames: prevRecords,
+    });
+  } catch (err) {
+    console.error("Error processing PDF:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.RemoveImagesFromPdf = async (req, res) => {
+  try {
+    const { pdfId, images } = req.body;
+
+    // 1. Validate PDF record
+    const pdfRecord = await PdfModel.findByPk(pdfId);
+    if (!pdfRecord) {
+      return res.status(404).json({ error: "PDF record not found" });
+    }
+
+    // 2. Fetch image records to be removed
+    const recordsToRemove = [];
+    for (const imageId of images) {
+      const record = await PdfFileModel.findByPk(imageId, {
+        attributes: ["id", "file_name"],
+      });
+      if (record) recordsToRemove.push(record);
+    }
+
+    const sourceDir = path.join(os.homedir(), "Documents", "images", "done");
+    const destDir = path.join(os.homedir(), "Documents", "images");
+
+    // 3. Move files back and delete DB records
+    const movedFiles = [];
+    for (const record of recordsToRemove) {
+      const srcPath = path.join(sourceDir, record.file_name);
+      const destPath = path.join(destDir, record.file_name);
+
+      try {
+        await fs.promises.rename(srcPath, destPath);
+        await record.destroy();
+        movedFiles.push(record.file_name);
+      } catch (err) {
+        console.error(`Failed to move/delete ${record.file_name}:`, err);
+      }
+    }
+
+    // 4. Regenerate PDF with remaining images
+    const remainingImages = await PdfFileModel.findAll({
+      where: { pdfId },
+      attributes: ["file_name"],
+    });
+
+    const imagePaths = remainingImages.map((r) =>
+      path.join(sourceDir, r.file_name)
+    );
+
+    const pdfName = pdfRecord.pdf_Name || `output-${Date.now()}`;
+    const pdfPath = path.join(sourceDir, `${pdfName}.pdf`); // overwrite original
+
+    await compressAndConvertImagesToPdf(imagePaths, pdfPath);
+
+    // 5. Respond
+    return res.json({
+      message: "PDF updated, images moved back, and records deleted.",
+      movedFiles,
+      updatedPdf: pdfPath,
     });
   } catch (err) {
     console.error("Error processing PDF:", err);

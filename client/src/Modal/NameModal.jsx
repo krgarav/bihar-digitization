@@ -8,6 +8,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const [pdfName, setPdfName] = React.useState(null);
   const [imageArray, setImageArray] = React.useState([]);
   const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? imageArray.length - 1 : prev - 1));
@@ -30,12 +31,12 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
     }
 
     try {
+      setIsLoading(true);
       const imageArray = Array.from(selectedImages);
       if (imageArray.length === 0) {
         toast.error("No images selected.");
         return;
       }
-
       const response = await axios.post("http://localhost:4000/process-pdf", {
         images: imageArray,
         name: pdfName.trim(),
@@ -47,6 +48,10 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
     } catch (error) {
       console.error("Error saving images:", error);
       toast.error("Failed to create PDF.");
+    } finally {
+      setIsLoading(false);
+      setPdfName(null);
+      onClose();
     }
   };
 
@@ -140,10 +145,17 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
             {/* Save Button aligned right */}
             <button
               type="button"
-              className="ml-4 px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition duration-200"
+              className={`ml-4 px-5 py-2.5 text-sm font-medium text-white rounded-lg transition cursor-pointer duration-200
+    ${
+      isLoading
+        ? "bg-blue-400 cursor-not-allowed"
+        : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+    }
+  `}
               onClick={handleSave}
+              disabled={isLoading}
             >
-              Save PDF
+              {isLoading ? "Saving PDF..." : "Save PDF"}
             </button>
           </div>
         </div>

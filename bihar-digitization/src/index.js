@@ -20,10 +20,10 @@ function createWindow() {
 
   // Vite dev or dist
   // if (process.env.NODE_ENV === "development") {
-  win.loadURL("http://localhost:5173").catch((err) => {
+  win.loadURL("http://localhost:4000").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   Menu.setApplicationMenu(null);
 }
 
@@ -31,6 +31,7 @@ function createWindow() {
 app.whenReady().then(async () => {
   // Start the Express server before opening the window
   // Start the backend server
+
   await startServer();
 
   // Start Express listening on port (only after DB sync)
@@ -120,12 +121,6 @@ ipcMain.handle("get-image-list", async (event, offset = 0, limit = 50) => {
 
     const pagedFiles = imageFiles.slice(offset, offset + limit);
 
-    console.log("OFFSET:", offset, "LIMIT:", limit);
-    console.log(
-      "RETURNING:",
-      pagedFiles.map((f) => f)
-    );
-
     return pagedFiles.map((name) => ({
       name,
       src: `http://localhost:4000/thumbnail/${encodeURIComponent(name)}`,
@@ -140,17 +135,37 @@ ipcMain.handle("search-images", async (event, query) => {
   const dir = path.join(os.homedir(), "Documents", "images");
   const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
 
+  const scoreMatch = (filename, query) => {
+    const name = filename.toLowerCase();
+    query = query.toLowerCase();
+    let score = 0;
+
+    // Simple scoring: +1 for each character in query that exists in filename
+    for (let char of query) {
+      if (name.includes(char)) score++;
+    }
+
+    // Bonus if filename includes full query as substring
+    if (name.includes(query)) score += 5;
+
+    return score;
+  };
+
   try {
     const files = fs.readdirSync(dir);
-    const imageFiles = files.filter((file) => {
-      const ext = path.extname(file).toLowerCase();
-      return (
-        validExtensions.includes(ext) &&
-        file.toLowerCase().includes(query.toLowerCase())
-      );
-    });
+    const imageFiles = files
+      .filter((file) =>
+        validExtensions.includes(path.extname(file).toLowerCase())
+      )
+      .map((file) => ({
+        name: file,
+        score: scoreMatch(file, query),
+      }))
+      .filter((item) => item.score > 0) // optional: exclude completely unrelated files
+      .sort((a, b) => b.score - a.score) // sort descending by score
+      .map((item) => item.name); // return only names
 
-    return imageFiles; // Only names, not base64 or thumbnails
+    return imageFiles;
   } catch (err) {
     return { error: err.message };
   }

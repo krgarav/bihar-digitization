@@ -10,6 +10,7 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
   const [selectedImages, setSelectedImages] = useState(new Set());
   const [trigger, setTrigger] = useState(false);
   const [addImage, setAddImage] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (selectedPdf?.pdf_Name) {
@@ -25,6 +26,7 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
 
   const handleSave = async () => {
     try {
+      setLoading(true);
       if (addImage === "addImage") {
         const res = await axios.put(
           "http://localhost:4000/edit-addimages-to-pdf",
@@ -53,6 +55,8 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
     } catch (error) {
       console.error("Error saving images:", error);
       alert("Failed to move images.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,12 +159,23 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
             <div className="flex justify-end p-4 md:p-5 border-t border-gray-200 dark:border-gray-600">
               <button
                 type="button"
-                className="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-pointer transition duration-200"
+                className={`px-5 py-2.5 text-sm font-medium text-white rounded-lg transition duration-200
+        ${
+          loading
+            ? "bg-blue-400 cursor-not-allowed"
+            : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        }
+      `}
+                disabled={loading}
                 onClick={handleSave}
               >
-                {addImage === "addImage"
+                {loading
+                  ? addImage === "addImage"
+                    ? "Adding Images..."
+                    : "Removing Images..."
+                  : addImage === "addImage"
                   ? "Add Images to Pdf"
-                  : "remove Images from Pdf"}
+                  : "Remove Images from Pdf"}
               </button>
             </div>
           )}

@@ -27,7 +27,6 @@ app.use(
 
 app.use(express.json());
 app.use(cors("*"));
-console.log(builtPath);
 app.use(express.static(builtPath));
 app.use(processRoute);
 

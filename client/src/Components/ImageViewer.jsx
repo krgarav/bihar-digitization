@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
+import Spinner from "./Spinner";
 
 const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
   const batchSize = 50;
@@ -7,6 +8,7 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
   const [displayedImages, setDisplayedImages] = useState([]); // what’s currently rendered
   const [loadedCount, setLoadedCount] = useState(0);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const debounceTimeout = useRef(null);
@@ -26,17 +28,20 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   // Fetch all image metadata on mount or trigger change
   useEffect(() => {
     const fetchImages = async () => {
       try {
+        setLoading(true);
         const firstBatch = await window.api.getImageList(0, batchSize);
-        console.log(firstBatch);
         setAllImages(firstBatch); // Consider renaming this to `loadedImages`
         setDisplayedImages(firstBatch);
         setLoadedCount(firstBatch.length);
       } catch (err) {
         setError("Failed to load images");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -97,23 +102,21 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
 
     debounceTimeout.current = setTimeout(async () => {
       if (value.trim() === "") {
-        setDisplayedImages(allImages); // Reset to full list
         setSearchQuery(null);
         setSuggestions([]);
-
         return;
       }
-
       const filenames = await window.api.searchImages(value); // get filenames from backend
-      const filteredImages = allImages.filter((img) =>
-        filenames.includes(img.name)
-      );
-
-      setDisplayedImages(filteredImages);
       setSuggestions(filenames.slice(0, 5)); // just names for suggestions
-    }, 300);
+    }, 1000);
   };
-
+  const handleSearchClick = (name) => {
+    const obj = {
+      name: name,
+      src: `http://localhost:4000/thumbnail/${name}`,
+    };
+    setDisplayedImages([obj]);
+  };
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
@@ -122,8 +125,8 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
         <input
           type="text"
           placeholder="Search images by name..."
-          className="w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          // value={searchQuery}
+          className="sticky top-0 w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={searchQuery}
           onChange={(e) => handleSearchChange(e.target.value)}
         />
         {suggestions.length > 0 && (
@@ -135,7 +138,7 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
               <li
                 key={index}
                 onClick={() => {
-                  handleSearchChange(name);
+                  handleSearchClick(name);
                   setSuggestions([]);
                 }}
                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
@@ -147,38 +150,49 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
         )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {displayedImages.map((img, index) => {
-          const isSelected = selectedImages.has(img.name);
-          return (
-            <div
-              key={index}
-              className="flex flex-col items-center border p-2 rounded shadow hover:shadow-lg"
-              onClick={() => handleImageClick(img.name)}
-            >
-              <div className="relative">
-                <img
-                  src={img.src}
-                  alt={img.name}
-                  className="w-full h-40 object-cover rounded"
-                />
-                <div className="absolute top-2 right-2">
-                  {isSelected ? (
-                    <FaCheckCircle className="text-green-500 text-xl" />
-                  ) : (
-                    <FaRegCircle className="text-gray-500 text-xl" />
-                  )}
-                </div>
-              </div>
+        {loading
+          ? Array.from({ length: 10 }).map((_, index) => (
               <div
-                className="mt-2 text-sm text-center truncate w-full"
-                title={img.name}
+                key={index}
+                className="flex flex-col items-center border p-2 rounded shadow animate-pulse"
               >
-                {img.name}
+                <div className="relative w-full h-40 bg-gray-300 rounded"></div>
+                <div className="mt-2 w-3/4 h-4 bg-gray-300 rounded"></div>
               </div>
-            </div>
-          );
-        })}
+            ))
+          : displayedImages.map((img, index) => {
+              const isSelected = selectedImages.has(img.name);
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col items-center border p-2 rounded shadow hover:shadow-lg"
+                  onClick={() => handleImageClick(img.name)}
+                >
+                  <div className="relative">
+                    <img
+                      src={img.src}
+                      alt={img.name}
+                      className="w-full h-40 object-cover rounded"
+                    />
+                    <div className="absolute top-2 right-2">
+                      {isSelected ? (
+                        <FaCheckCircle color="green" className="text-green-500 text-xl" />
+                      ) : (
+                        <FaRegCircle className="text-gray-500 text-xl" />
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className="mt-2 text-sm text-center truncate w-full"
+                    title={img.name}
+                  >
+                    {img.name}
+                  </div>
+                </div>
+              );
+            })}
       </div>
+
       <div
         ref={loaderRef}
         className="h-10 col-span-4 flex justify-center items-center"

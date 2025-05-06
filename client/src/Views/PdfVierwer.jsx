@@ -78,16 +78,16 @@ const PdfViewer = () => {
 
   return (
     <>
-      <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
+      <div className="p-6 bg-gray-900 min-h-screen">
         <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
           📚 Available PDFs
         </h2>
 
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {images.map((img, index) => (
             <div
               key={index}
-              className="cursor-pointer border-2 rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-lg relative bg-white dark:bg-gray-800 border-gray-200"
+              className="cursor-pointer border-2 rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-lg relative bg-gray-800 border-gray-200"
               onClick={() => handleImageClick(img.pdf_Name)}
             >
               {/* Edit Icon */}
@@ -103,13 +103,13 @@ const PdfViewer = () => {
 
               {/* PDF Icon */}
               <div className="flex justify-center mb-4 text-red-600 text-5xl">
-                <AiFillFilePdf />
+                <AiFillFilePdf color="#FF6666" />
               </div>
 
               {/* PDF Info */}
               <div className="text-center">
                 <p
-                  className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate"
+                  className="text-sm font-medium text-gray-200 truncate"
                   title={img.pdf_Name}
                 >
                   {img.pdf_Name}.pdf

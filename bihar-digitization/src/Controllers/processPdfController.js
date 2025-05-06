@@ -6,7 +6,7 @@ const compressAndConvertImagesToPdf = require("../Services/imageToPdf.js");
 const PdfModel = require("../Models/pdfModel");
 const PdfFileModel = require("../Models/pdfFileModel.js");
 const sharp = require("sharp");
-
+const Jimp = require("jimp");
 // exports.processPdf = async (req, res) => {
 //   try {
 //     const { images, name } = req.body;
@@ -304,6 +304,25 @@ exports.convertImg = (req, res) => {
     });
 };
 
+// exports.convertImg = async (req, res) => {
+//   const imageName = req.params.imageName;
+//   const imagePath = path.join(os.homedir(), "Documents", "images", imageName);
+//   if (!fs.existsSync(imagePath)) {
+//     return res.status(404).send("Image not found");
+//   }
+
+//   try {
+//     const image = await Jimp.read(imagePath);
+//     image.resize(150, Jimp.AUTO); // Resize width to 150, auto height
+//     const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+
+//     res.set("Content-Type", "image/jpeg");
+//     res.send(buffer);
+//   } catch (err) {
+//     console.error("Thumbnail error:", err);
+//     res.status(500).send("Failed to create thumbnail");
+//   }
+// };
 exports.editRemoveImgProcessedPdf = async (req, res) => {
   try {
     const { pdfId } = req.query;

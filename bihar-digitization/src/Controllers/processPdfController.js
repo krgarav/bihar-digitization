@@ -48,15 +48,19 @@ const DataPathModel = require("../Models/dataPathModel.js");
 
 exports.processPdf = async (req, res) => {
   try {
-    const { images, name } = req.body;
+    const { images, name, pathId } = req.body;
+    if (!pathId) {
+      return res.status(400).json({ error: "PathId is required" });
+    }
     if (!name) {
       return res.status(400).json({ error: "Name is required" });
     }
     if (!Array.isArray(images)) {
       return res.status(400).json({ error: "Images must be an array" });
     }
-
-    const sourceDir = path.join(os.homedir(), "Documents", "images");
+    const srcFile = await DataPathModel.findByPk(pathId);
+    const sourceDir = srcFile.image_Path;
+    const enteredPdfPath = srcFile.pdf_Path;
     const destDir = path.join(sourceDir, "done");
 
     if (!fs.existsSync(destDir)) {
@@ -66,7 +70,7 @@ exports.processPdf = async (req, res) => {
     const imagePaths = images.map((imageName) =>
       path.join(sourceDir, imageName)
     );
-    const pdfPath = path.join(destDir, `${name}.pdf`);
+    const pdfPath = path.join(enteredPdfPath, `${name}.pdf`);
 
     // Convert to PDF
     await compressAndConvertImagesToPdf(imagePaths, pdfPath);
@@ -82,7 +86,7 @@ exports.processPdf = async (req, res) => {
     });
 
     // Save PDF and image info to DB
-    const pdfRecord = await PdfModel.create({ pdf_Name: name });
+    const pdfRecord = await PdfModel.create({ pdf_Name: name, pathId: pathId });
 
     const pdfFileRecords = images.map((fileName) => ({
       file_name: fileName,
@@ -114,18 +118,15 @@ exports.getAllPdf = async (req, res) => {
 
 exports.getSinglePdf = async (req, res) => {
   try {
-    const { imgName } = req.query;
-    console.log("imgName", imgName);
+    const { imgName, pdfPath } = req.query;
+
     if (!imgName) {
       return res.status(400).json({ error: "PDF name is required" });
     }
 
-    const sourceDir = path.join(os.homedir(), "Documents", "images", "done");
-    const pdfPath = path.join(sourceDir, `${imgName}.pdf`);
-
-    console.log("pdfPath", pdfPath);
+    const pdfMainPath = path.join(pdfPath, `${imgName}.pdf`);
     // Check if the file exists
-    if (!fs.existsSync(pdfPath)) {
+    if (!fs.existsSync(pdfMainPath)) {
       return res.status(404).json({ error: "PDF not found" });
     }
 
@@ -134,7 +135,7 @@ exports.getSinglePdf = async (req, res) => {
     res.setHeader("Content-Disposition", `inline; filename="${imgName}"`);
 
     // Stream the file
-    const fileStream = fs.createReadStream(pdfPath);
+    const fileStream = fs.createReadStream(pdfMainPath);
     fileStream.pipe(res);
   } catch (err) {
     console.error("Error fetching PDF:", err);
@@ -311,7 +312,39 @@ exports.convertImg = (req, res) => {
       res.status(500).send("Failed to create thumbnail");
     });
 };
+exports.viewImg = (req, res) => {
+  const imageName = req.params.imageName;
+  const dir = req.query.dir;
 
+  if (!dir) {
+    return res.status(400).send("Directory path is required in query string");
+  }
+
+  const imagePath = path.resolve(dir, imageName);
+
+  if (!fs.existsSync(imagePath)) {
+    return res.status(404).send("Image not found");
+  }
+
+  const ext = path.extname(imageName).toLowerCase();
+  const mimeTypes = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".bmp": "image/bmp",
+    ".webp": "image/webp",
+  };
+
+  const mimeType = mimeTypes[ext] || "application/octet-stream";
+  res.setHeader("Content-Type", mimeType);
+
+  const stream = fs.createReadStream(imagePath);
+  stream.pipe(res).on("error", (err) => {
+    console.error("Stream error:", err);
+    res.status(500).send("Failed to stream image");
+  });
+};
 // exports.convertImg = async (req, res) => {
 //   const imageName = req.params.imageName;
 //   const imagePath = path.join(os.homedir(), "Documents", "images", imageName);

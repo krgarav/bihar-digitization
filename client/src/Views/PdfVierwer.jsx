@@ -33,10 +33,12 @@ const PdfViewer = () => {
 
   const handleImageClick = async (imgName) => {
     try {
+      const dir = JSON.parse(localStorage.getItem("pathId"));
+      console.log(dir);
       const response = await axios.get(
         `http://localhost:4000/get-single-pdf?imgName=${encodeURIComponent(
           imgName
-        )}`,
+        )}&pdfPath=${dir["pdf_Path"]}`,
         {
           responseType: "blob",
         }

@@ -9,6 +9,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const [imageArray, setImageArray] = React.useState([]);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(false);
+  const dir = JSON.parse(localStorage.getItem("pathId"));
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? imageArray.length - 1 : prev - 1));
@@ -37,9 +38,12 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
         toast.error("No images selected.");
         return;
       }
+      const pathId = JSON.parse(localStorage.getItem("pathId")).id;
+
       const response = await axios.post("http://localhost:4000/process-pdf", {
         images: imageArray,
         name: pdfName.trim(),
+        pathId: pathId,
       });
 
       setTrigger((prev) => !prev);
@@ -116,7 +120,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
           <div className="relative w-[500px]">
             {imageArray.length > 0 && (
               <ImageViewer
-                img={`http://localhost:4000/images/${imageArray[currentIndex]}`}
+                img={`http://localhost:4000/view-image/${imageArray[currentIndex]}?dir=${dir["image_Path"]}`}
                 width="640px"
               />
             )}

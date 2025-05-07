@@ -9,6 +9,7 @@ const {
   RemoveImagesFromPdf,
   savePaths,
   getAllPaths,
+  viewImg,
 } = require("../Controllers/processPdfController");
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.get("/get-single-pdf", getSinglePdf);
 router.put("/edit-addimages-to-pdf", editAddImgProcessedPdf);
 router.get("/edit-remove-images-to-pdf", editRemoveImgProcessedPdf);
 router.post("/remove-pdf-images", RemoveImagesFromPdf);
-
+router.get("/view-image/:imageName",viewImg)
 router.get("/thumbnail/:imageName", convertImg);
 router.post("/save-paths", savePaths);
 router.get("/get-save-paths", getAllPaths);

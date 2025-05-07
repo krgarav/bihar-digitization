@@ -11,6 +11,7 @@ import PdfViewer from "./Views/PdfVierwer";
 import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PathModal from "./Modal/PathModal";
+import Loader from "./Components/Loader";
 function App() {
   const [selectedImages, setSelectedImages] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,9 @@ function App() {
     };
     fetchPaths();
   }, [trigger]);
-
+  // if (!loading) {
+  //   return <Loader />;
+  // }
   if (path === null) {
     return (
       <PathModal

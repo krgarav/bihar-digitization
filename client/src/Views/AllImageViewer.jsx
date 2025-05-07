@@ -29,12 +29,18 @@ const AllImageViewer = () => {
     }, 1000);
   };
   const handleSearchClick = (name) => {
+    const dir = JSON.parse(localStorage.getItem("pathId"));
+    const encodedUri = encodeURIComponent(dir["image_Path"]);
     const obj = {
       name: name,
-      src: `http://localhost:4000/thumbnail/${name}`,
+      src: `http://localhost:4000/thumbnail/${name}?dir=${encodedUri}`,
     };
+
     const arr = Array.from(selectedImages).map((item) => {
-      return { name: item, src: `http://localhost:4000/thumbnail/${item}` };
+      return {
+        name: item,
+        src: `http://localhost:4000/thumbnail/${item}?dir=${encodedUri}`,
+      };
     });
 
     setDisplayedImages([obj, ...arr]);

@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ImageViewer from "../Components/ImageViewer";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import RemoveImageViewer from "../Components/RemoveImageViewer";
@@ -11,6 +11,10 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
   const [trigger, setTrigger] = useState(false);
   const [addImage, setAddImage] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [displayedImages, setDisplayedImages] = useState([]); // what’s currently rendered
+  const debounceTimeout = useRef(null);
 
   useEffect(() => {
     if (selectedPdf?.pdf_Name) {
@@ -59,7 +63,32 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
       setLoading(false);
     }
   };
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
 
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(async () => {
+      if (value.trim() === "") {
+        setSearchQuery(null);
+        setSuggestions([]);
+        return;
+      }
+      const filenames = await window.api.searchImages(value); // get filenames from backend
+      setSuggestions(filenames.slice(0, 5)); // just names for suggestions
+    }, 1000);
+  };
+  const handleSearchClick = (name) => {
+    const obj = {
+      name: name,
+      src: `http://localhost:4000/thumbnail/${name}`,
+    };
+    const arr = Array.from(selectedImages).map((item) => {
+      return { name: item, src: `http://localhost:4000/thumbnail/${item}` };
+    });
+
+    setDisplayedImages([obj, ...arr]);
+  };
   return (
     <div
       id="default-modal"
@@ -138,11 +167,40 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
               </div>
             )}
             {addImage === "addImage" && (
-              <ImageViewer
-                selectedImages={selectedImages}
-                setSelectedImages={setSelectedImages}
-                trigger={trigger}
-              />
+              <>
+                <div className="relative w-[50%]">
+                  <input
+                    type="text"
+                    placeholder="Search images by name..."
+                    className="w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                  />
+                  {suggestions.length > 0 && (
+                    <ul className="absolute top-full left-0 w-full bg-white text-black border border-t-0 border-gray-300 rounded-b-lg shadow-md z-10">
+                      {suggestions.map((name, index) => (
+                        <li
+                          key={index}
+                          onClick={() => {
+                            handleSearchClick(name);
+                            setSuggestions([]);
+                          }}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                        >
+                          {name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <ImageViewer
+                  selectedImages={selectedImages}
+                  setSelectedImages={setSelectedImages}
+                  trigger={trigger}
+                  setDisplayedImages={setDisplayedImages}
+                  displayedImages={displayedImages}
+                />
+              </>
             )}
             {addImage === "removeImage" && (
               <RemoveImageViewer

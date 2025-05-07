@@ -2,10 +2,16 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 import Spinner from "./Spinner";
 
-const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
+const ImageViewer = ({
+  selectedImages,
+  setSelectedImages,
+  setDisplayedImages,
+  displayedImages,
+  trigger,
+}) => {
   const batchSize = 50;
   const [allImages, setAllImages] = useState([]); // full list of image metadata
-  const [displayedImages, setDisplayedImages] = useState([]); // what’s currently rendered
+  // const [displayedImages, setDisplayedImages] = useState([]); // what’s currently rendered
   const [loadedCount, setLoadedCount] = useState(0);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -115,13 +121,17 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
       name: name,
       src: `http://localhost:4000/thumbnail/${name}`,
     };
-    setDisplayedImages([obj]);
+    const arr = Array.from(selectedImages).map((item) => {
+      return { name: item, src: `http://localhost:4000/thumbnail/${item}` };
+    });
+    setSearchQuery(name);
+    setDisplayedImages([obj, ...arr]);
   };
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
     <div className="p-4  h-[65vh] overflow-y-auto">
-      <div className="mb-4 max-w-md mx-auto relative">
+      {/* <div className="mb-4 max-w-md mx-auto relative">
         <input
           type="text"
           placeholder="Search images by name..."
@@ -148,7 +158,7 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
             ))}
           </ul>
         )}
-      </div>
+      </div> */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => (
@@ -176,7 +186,10 @@ const ImageViewer = ({ selectedImages, setSelectedImages, trigger }) => {
                     />
                     <div className="absolute top-2 right-2">
                       {isSelected ? (
-                        <FaCheckCircle color="green" className="text-green-500 text-xl" />
+                        <FaCheckCircle
+                          color="green"
+                          className="text-green-500 text-xl"
+                        />
                       ) : (
                         <FaRegCircle className="text-gray-500 text-xl" />
                       )}

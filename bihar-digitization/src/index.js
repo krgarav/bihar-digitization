@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -20,10 +20,10 @@ function createWindow() {
 
   // Vite dev or dist
   // if (process.env.NODE_ENV === "development") {
-  win.loadURL("http://localhost:4000").catch((err) => {
+  win.loadURL("http://localhost:5173").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
-  // win.webContents.openDevTools();
+  win.webContents.openDevTools();
   Menu.setApplicationMenu(null);
 }
 
@@ -136,21 +136,21 @@ ipcMain.handle("search-images", async (event, query) => {
   const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
 
   const scoreMatch = (filename, query) => {
-    const name = filename.toLowerCase();
+    const name = path.parse(filename).name.toLowerCase(); // no extension
     query = query.toLowerCase();
     let score = 0;
 
-    // Simple scoring: +1 for each character in query that exists in filename
+    if (name === query) return 999; // exact match gets highest priority
+
+    // Add basic fuzzy scoring
     for (let char of query) {
       if (name.includes(char)) score++;
     }
 
-    // Bonus if filename includes full query as substring
     if (name.includes(query)) score += 5;
 
     return score;
   };
-
   try {
     const files = fs.readdirSync(dir);
     const imageFiles = files
@@ -179,4 +179,10 @@ ipcMain.handle("get-done-image-list", async () => {
     validExtensions.includes(path.extname(file).toLowerCase())
   );
   return imageFiles; // just names
+});
+
+ipcMain.handle("select-folder", async () => {
+  return await dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
 });

@@ -5,8 +5,8 @@ const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("api", {
   getImages: () => ipcRenderer.invoke("get-images"),
   getDonePdfs: () => ipcRenderer.invoke("get-done-pdfs"),
-  getImageList: (offset = 0, limit = 50) =>
-    ipcRenderer.invoke("get-image-list", offset, limit),
+  getImageList: (offset = 0, limit = 50 ,dir) =>
+    ipcRenderer.invoke("get-image-list", offset, limit,dir),
   searchImages: (query) => ipcRenderer.invoke("search-images", query),
   getDoneImageList: () => ipcRenderer.invoke("get-done-image-list"),
   selectFolder: () => ipcRenderer.invoke("select-folder"),

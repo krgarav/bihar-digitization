@@ -40,7 +40,12 @@ const ImageViewer = ({
     const fetchImages = async () => {
       try {
         setLoading(true);
-        const firstBatch = await window.api.getImageList(0, batchSize);
+        const dir = JSON.parse(localStorage.getItem("pathId"));
+        const firstBatch = await window.api.getImageList(
+          0,
+          batchSize,
+          dir["image_Path"]
+        );
         setAllImages(firstBatch); // Consider renaming this to `loadedImages`
         setDisplayedImages(firstBatch);
         setLoadedCount(firstBatch.length);
@@ -56,7 +61,12 @@ const ImageViewer = ({
 
   const loadMoreImages = useCallback(async () => {
     try {
-      const newImages = await window.api.getImageList(loadedCount, batchSize);
+      const dir = JSON.parse(localStorage.getItem("pathId"));
+      const newImages = await window.api.getImageList(
+        loadedCount,
+        batchSize,
+        dir["image_Path"]
+      );
       setDisplayedImages((prev) => [...prev, ...newImages]);
       setLoadedCount((prev) => prev + newImages.length);
 

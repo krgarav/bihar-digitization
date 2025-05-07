@@ -6,6 +6,7 @@ const fs = require("fs");
 const processRoute = require("./Routes/processpdf");
 const PdfModel = require("./Models/pdfModel");
 const PdfFileModel = require("./Models/pdfFileModel");
+const DataPathModel = require("./Models/dataPathModel");
 const sequelize = require("./utils/database");
 const os = require("os");
 const builtPath = path.join(__dirname, "./dist");
@@ -37,6 +38,13 @@ PdfModel.hasMany(PdfFileModel, {
 
 PdfFileModel.belongsTo(PdfModel, {
   foreignKey: "pdfId",
+});
+
+DataPathModel.hasOne(PdfModel, {
+  foreignKey: "pathId",
+});
+PdfModel.belongsTo(DataPathModel, {
+  foreignKey: "pathId",
 });
 // Database Sync and Admin User Creation (Handled in Electron Main)
 const startServer = async () => {

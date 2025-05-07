@@ -89,6 +89,7 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
 
     setDisplayedImages([obj, ...arr]);
   };
+
   return (
     <div
       id="default-modal"

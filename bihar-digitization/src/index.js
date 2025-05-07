@@ -100,16 +100,22 @@ ipcMain.handle("get-done-pdfs", async () => {
   }
 });
 
-ipcMain.handle("get-image-list", async (event, offset = 0, limit = 50) => {
+ipcMain.handle("get-image-list", async (event, offset = 0, limit = 50, dir) => {
   try {
-    const dir = path.join(os.homedir(), "Documents", "images");
-    const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    if (!dir) {
+      throw new Error("Directory path is required.");
     }
 
-    const files = await fs.promises.readdir(dir);
+    // Normalize the directory path (convert backslashes to slashes)
+    const normalizedDir = path.normalize(decodeURIComponent(dir));
+
+    const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+
+    if (!fs.existsSync(normalizedDir)) {
+      fs.mkdirSync(normalizedDir, { recursive: true });
+    }
+
+    const files = await fs.promises.readdir(normalizedDir);
 
     const imageFiles = files
       .filter((file) =>
@@ -120,10 +126,11 @@ ipcMain.handle("get-image-list", async (event, offset = 0, limit = 50) => {
       );
 
     const pagedFiles = imageFiles.slice(offset, offset + limit);
+    const encodedDir = encodeURIComponent(normalizedDir);
 
     return pagedFiles.map((name) => ({
       name,
-      src: `http://localhost:4000/thumbnail/${encodeURIComponent(name)}`,
+      src: `http://localhost:4000/thumbnail/${name}?dir=${encodedDir}`,
     }));
   } catch (err) {
     console.error("Failed to list image files:", err);

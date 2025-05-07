@@ -7,6 +7,7 @@ const PdfModel = require("../Models/pdfModel");
 const PdfFileModel = require("../Models/pdfFileModel.js");
 const sharp = require("sharp");
 const Jimp = require("jimp");
+const DataPathModel = require("../Models/dataPathModel.js");
 // exports.processPdf = async (req, res) => {
 //   try {
 //     const { images, name } = req.body;
@@ -285,14 +286,21 @@ exports.getAllPdfImages = async (req, res) => {
 
 exports.convertImg = (req, res) => {
   const imageName = req.params.imageName;
-  const imagePath = path.join(os.homedir(), "Documents", "images", imageName);
+  const dir = req.query.dir;
+
+  if (!dir) {
+    return res.status(400).send("Directory path is required in query string");
+  }
+
+  // Sanitize and resolve full image path
+  const imagePath = path.resolve(dir, imageName);
 
   if (!fs.existsSync(imagePath)) {
     return res.status(404).send("Image not found");
   }
 
   sharp(imagePath)
-    .resize(150) // Resize to thumbnail width
+    .resize(150)
     .toBuffer()
     .then((buffer) => {
       res.set("Content-Type", "image/jpeg");
@@ -410,5 +418,41 @@ exports.RemoveImagesFromPdf = async (req, res) => {
   } catch (err) {
     console.error("Error processing PDF:", err);
     return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.savePaths = async (req, res) => {
+  try {
+    const { pdf_Path, image_Path } = req.body;
+
+    if (!pdf_Path || !image_Path) {
+      return res.status(400).json({ message: "Both paths are required." });
+    }
+
+    const newPath = await DataPathModel.create({
+      pdf_Path,
+      image_Path,
+    });
+
+    res
+      .status(201)
+      .json({ message: "Paths saved successfully.", data: newPath });
+  } catch (error) {
+    console.error("Error saving paths:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+exports.getAllPaths = async (req, res) => {
+  try {
+    const allPaths = await DataPathModel.findAll();
+
+    res.status(200).json({
+      message: "All paths retrieved successfully.",
+      data: allPaths,
+    });
+  } catch (error) {
+    console.error("Error fetching paths:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };

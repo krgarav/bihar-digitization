@@ -8,7 +8,27 @@ import { toast } from "react-toastify";
 const PathModal = ({ show, onClose, event, setTrigger }) => {
   const [imagePath, setImagePath] = useState("");
   const [thumbPath, setThumbPath] = useState("");
-
+  const [path, setPath] = useState(null);
+  useEffect(() => {
+    const fetchCurrentPath = async (dir) => {
+      try {
+        const res = await axios.get(
+          `http://localhost:4000/get-current-paths?pathId=${dir.id} `
+        );
+        console.log(res);
+        if (res?.data?.data) {
+          setPath(res?.data?.data[0]);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    const dir = JSON.parse(localStorage.getItem("pathId"));
+    fetchCurrentPath(dir);
+    if (dir) {
+      fetchCurrentPath(dir);
+    }
+  }, [show]);
   const handleBrowse = async (setPath) => {
     const result = await window.api.selectFolder();
     if (result && !result.canceled && result.filePaths.length > 0) {
@@ -80,6 +100,26 @@ const PathModal = ({ show, onClose, event, setTrigger }) => {
               </button>
             )}
           </div>
+          {path && (
+            <div className="p-4 bg-white dark:bg-gray-800 shadow-md rounded-lg space-y-4">
+              <section className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Current Image Path :
+                </label>
+                <p className="text-gray-600 dark:text-gray-400 break-all">
+                  {path.image_Path}
+                </p>
+              </section>
+              <section className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Current PDF Path :
+                </label>
+                <p className="text-gray-600 dark:text-gray-400 break-all">
+                  {path.pdf_Path}
+                </p>
+              </section>
+            </div>
+          )}
 
           {/* Body */}
           <div className="p-4 md:p-5 space-y-4">

@@ -28,6 +28,8 @@ const EditPdfModal = ({ show, selectedPdf, onClose }) => {
     setAddImage(false);
   }, [onClose]);
 
+ 
+
   const handleSave = async () => {
     try {
       setLoading(true);

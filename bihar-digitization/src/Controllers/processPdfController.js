@@ -489,3 +489,17 @@ exports.getAllPaths = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+exports.getCurrentPaths = async (req, res) => {
+  try {
+    const { pathId } = req.query;
+    const allPaths = await DataPathModel.findByPk(pathId);
+
+    res.status(200).json({
+      message: "All paths retrieved successfully.",
+      data: allPaths,
+    });
+  } catch (error) {
+    console.error("Error fetching paths:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};

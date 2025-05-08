@@ -107,12 +107,24 @@ exports.processPdf = async (req, res) => {
 
 exports.getAllPdf = async (req, res) => {
   try {
-    const pdfs = await PdfModel.findAll();
+    const { pathId } = req.query;
 
-    res.status(200).json(pdfs);
-  } catch (err) {
-    console.error("Error fetching PDFs:", err);
-    res.status(500).json({ error: "Failed to retrieve PDFs" });
+    if (!pathId) {
+      return res
+        .status(400)
+        .json({ error: "Missing required parameter: pathId" });
+    }
+
+    const pdfs = await PdfModel.findAll({
+      where: { pathId },
+    });
+
+    return res.status(200).json(pdfs);
+  } catch (error) {
+    console.error("Error fetching PDFs:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error. Could not retrieve PDFs." });
   }
 };
 
@@ -462,6 +474,16 @@ exports.savePaths = async (req, res) => {
       return res.status(400).json({ message: "Both paths are required." });
     }
 
+    // Check for existing entry with the same paths
+    const existing = await DataPathModel.findOne({
+      where: { pdf_Path, image_Path },
+    });
+
+    if (existing) {
+      return res.status(409).json({ message: "Path already exists." });
+    }
+
+    // Create new entry
     const newPath = await DataPathModel.create({
       pdf_Path,
       image_Path,

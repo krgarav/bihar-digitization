@@ -15,7 +15,10 @@ const PdfViewer = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/get-all-pdfs");
+        const dir = JSON.parse(localStorage.getItem("pathId"));
+        const response = await axios.get(
+          `http://localhost:4000/get-all-pdfs?pathId=${dir.id}`
+        );
         const result = response.data;
 
         if (Array.isArray(result)) {

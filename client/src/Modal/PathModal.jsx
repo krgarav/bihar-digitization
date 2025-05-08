@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 const PathModal = ({ show, onClose, event, setTrigger }) => {
   const [imagePath, setImagePath] = useState("");
   const [thumbPath, setThumbPath] = useState("");
+  const [image, setImage] = useState("");
   const [path, setPath] = useState(null);
   useEffect(() => {
     const fetchCurrentPath = async (dir) => {

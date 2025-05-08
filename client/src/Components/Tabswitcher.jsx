@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiSettings } from "react-icons/fi";
 import PathModal from "../Modal/PathModal";
+import ChangePathModal from "../Modal/ChangePathModal";
 const Tabswitcher = ({ tabs = [], onTabChange, initialTab = 0 }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -64,7 +65,7 @@ const Tabswitcher = ({ tabs = [], onTabChange, initialTab = 0 }) => {
         </div>
       )} */}
 
-      <PathModal
+      <ChangePathModal
         show={showSettingsModal}
         onClose={() => {
           setShowSettingsModal(false);

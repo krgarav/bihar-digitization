@@ -12,6 +12,7 @@ import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PathModal from "./Modal/PathModal";
 import Loader from "./Components/Loader";
+import ChangePathModal from "./Modal/ChangePathModal";
 function App() {
   const [selectedImages, setSelectedImages] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -26,25 +27,19 @@ function App() {
     setSelectedImages(index);
   };
   useEffect(() => {
-    const fetchPaths = async () => {
-      try {
-        const res = await axios.get("http://localhost:4000/get-save-paths");
-        if (res?.data?.data.length > 0) {
-          localStorage.setItem("pathId", JSON.stringify(res.data.data[0]));
-          setPath(res.data.data[0]);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchPaths();
+    const dir = localStorage.getItem("pathId");
+    if (!dir) {
+      setPath(null);
+    } else {
+      setPath(JSON.parse(dir));
+    }
   }, [trigger]);
   // if (!loading) {
   //   return <Loader />;
   // }
   if (path === null) {
     return (
-      <PathModal
+      <ChangePathModal
         show={show}
         onClose={() => {
           setShow(false);

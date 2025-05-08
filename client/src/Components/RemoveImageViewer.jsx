@@ -19,6 +19,8 @@ const RemoveImageViewer = ({
   const loaderRef = useRef(null);
   const [hasMore, setHasMore] = useState(true);
   const searchRef = useRef(null);
+  const dir = JSON.parse(localStorage.getItem("pathId"));
+  const encodedUri = encodeURIComponent(dir["image_Path"] + "/done");
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -38,9 +40,9 @@ const RemoveImageViewer = ({
         const firstBatch = await axios.get(
           "http://localhost:4000/edit-remove-images-to-pdf?pdfId=" + pdfId
         );
-        console.log(firstBatch);
+
         const result = firstBatch?.data?.pdfNames;
-        console.log(result);
+
         setAllImages(result); // Consider renaming this to `loadedImages`
         setDisplayedImages(result);
         setLoadedCount(result.length);
@@ -130,8 +132,7 @@ const RemoveImageViewer = ({
             >
               <div className="relative">
                 <img
-                  src={`http://localhost:4000/pdfImages/${imgName}
-                  `}
+                  src={`http://localhost:4000/thumbnail/${imgName}?dir=${encodedUri}`}
                   alt={img.name}
                   className="w-full h-40 object-cover rounded"
                 />

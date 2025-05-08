@@ -105,9 +105,32 @@ exports.processPdf = async (req, res) => {
   }
 };
 
+// exports.getAllPdf = async (req, res) => {
+//   try {
+//     const { pathId } = req.query;
+
+//     if (!pathId) {
+//       return res
+//         .status(400)
+//         .json({ error: "Missing required parameter: pathId" });
+//     }
+
+//     const pdfs = await PdfModel.findAll({
+//       where: { pathId },
+//     });
+
+//     return res.status(200).json(pdfs);
+//   } catch (error) {
+//     console.error("Error fetching PDFs:", error);
+//     return res
+//       .status(500)
+//       .json({ error: "Internal server error. Could not retrieve PDFs." });
+//   }
+// };
+
 exports.getAllPdf = async (req, res) => {
   try {
-    const { pathId } = req.query;
+    const { pathId, page = 1 } = req.query;
 
     if (!pathId) {
       return res
@@ -115,11 +138,21 @@ exports.getAllPdf = async (req, res) => {
         .json({ error: "Missing required parameter: pathId" });
     }
 
-    const pdfs = await PdfModel.findAll({
+    const limit = 50;
+    const offset = (parseInt(page) - 1) * limit;
+
+    const pdfs = await PdfModel.findAndCountAll({
       where: { pathId },
+      limit,
+      offset,
     });
 
-    return res.status(200).json(pdfs);
+    return res.status(200).json({
+      total: pdfs.count,
+      page: parseInt(page),
+      totalPages: Math.ceil(pdfs.count / limit),
+      data: pdfs.rows,
+    });
   } catch (error) {
     console.error("Error fetching PDFs:", error);
     return res
@@ -218,6 +251,77 @@ exports.getSinglePdf = async (req, res) => {
 //   }
 // };
 
+// exports.editAddImgProcessedPdf = async (req, res) => {
+//   try {
+//     const { images, pdfId } = req.body;
+
+//     if (!Array.isArray(images) || images.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ error: "Images must be a non-empty array" });
+//     }
+
+//     // Get PDF record
+//     const pdfRecord = await PdfModel.findByPk(pdfId);
+
+//     if (!pdfRecord) {
+//       return res.status(404).json({ error: "PDF record not found" });
+//     }
+//     const pathId = pdfRecord.pathId;
+//     const pathRecord = await DataPathModel.findByPk(pathId);
+//     const sourcePdfDir = pathRecord.image_path;
+//     const sourceDir = pathRecord.image_path;
+//     const destDir = path.join(sourceDir, "done");
+//     // Ensure "done" folder exists
+//     if (!fs.existsSync(destDir)) {
+//       fs.mkdirSync(destDir, { recursive: true });
+//     }
+
+//     const pdfName = pdfRecord.pdf_Name || `output-${Date.now()}`;
+//     const pdfPath = path.join(sourcePdfDir, `${pdfName}.pdf`);
+
+//     // Get previously added images (if any)
+//     const prevRecords = await PdfFileModel.findAll({
+//       where: { pdfId },
+//       attributes: ["file_name"],
+//     });
+
+//     const prevImagePaths = prevRecords.map((r) =>
+//       path.join(destDir, r.file_name)
+//     );
+//     const newImagePaths = images.map((img) => path.join(sourceDir, img));
+//     const allImagePaths = [...prevImagePaths, ...newImagePaths];
+
+//     // Create PDF
+//     await compressAndConvertImagesToPdf(allImagePaths, pdfPath);
+
+//     // Move new images to "done"
+//     await Promise.all(
+//       images.map(async (img) => {
+//         const from = path.join(sourceDir, img);
+//         const to = path.join(destDir, img);
+//         if (fs.existsSync(from)) {
+//           await fsPromises.rename(from, to);
+//         }
+//       })
+//     );
+
+//     // Insert new image records
+//     const newFileRecords = images.map((name) => ({
+//       file_name: name,
+//       pdfId: pdfRecord.id,
+//     }));
+//     await PdfFileModel.bulkCreate(newFileRecords);
+
+//     return res.json({
+//       message: "PDF updated and database synced successfully.",
+//     });
+//   } catch (err) {
+//     console.error("Error processing PDF:", err);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
 exports.editAddImgProcessedPdf = async (req, res) => {
   try {
     const { images, pdfId } = req.body;
@@ -228,24 +332,42 @@ exports.editAddImgProcessedPdf = async (req, res) => {
         .json({ error: "Images must be a non-empty array" });
     }
 
-    const sourceDir = path.join(os.homedir(), "Documents", "images");
-    const destDir = path.join(sourceDir, "done");
-
-    // Ensure "done" folder exists
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-
-    // Get PDF record
+    // Fetch PDF record
     const pdfRecord = await PdfModel.findByPk(pdfId);
     if (!pdfRecord) {
       return res.status(404).json({ error: "PDF record not found" });
     }
 
-    const pdfName = pdfRecord.pdf_Name || `output-${Date.now()}`;
-    const pdfPath = path.join(destDir, `${pdfName}.pdf`);
+    const pathRecord = await DataPathModel.findByPk(pdfRecord.pathId);
+    if (!pathRecord) {
+      return res.status(404).json({ error: "Path record not found" });
+    }
 
-    // Get previously added images (if any)
+    const sourceDir = pathRecord.image_Path;
+    const pdfDir = pathRecord.pdf_Path;
+    const destDir = path.join(sourceDir, "done");
+
+    // Ensure 'done' directory exists
+    await fsPromises.mkdir(destDir, { recursive: true });
+
+    const pdfName = pdfRecord.pdf_Name || `output-${Date.now()}`;
+    const pdfPath = path.join(pdfDir, `${pdfName}.pdf`);
+
+    // Move new images to 'done' directory first
+    await Promise.all(
+      images.map(async (img) => {
+        const from = path.join(sourceDir, img);
+        const to = path.join(destDir, img);
+        try {
+          await fsPromises.access(from); // Check file exists
+          await fsPromises.rename(from, to);
+        } catch (err) {
+          console.warn(`Skipping missing or inaccessible file: ${img}`);
+        }
+      })
+    );
+
+    // Get all image file paths: previous + new (now moved)
     const prevRecords = await PdfFileModel.findAll({
       where: { pdfId },
       attributes: ["file_name"],
@@ -254,26 +376,15 @@ exports.editAddImgProcessedPdf = async (req, res) => {
     const prevImagePaths = prevRecords.map((r) =>
       path.join(destDir, r.file_name)
     );
-    const newImagePaths = images.map((img) => path.join(sourceDir, img));
+    const newImagePaths = images.map((img) => path.join(destDir, img));
     const allImagePaths = [...prevImagePaths, ...newImagePaths];
 
-    // Create PDF
+    // Generate the updated PDF
     await compressAndConvertImagesToPdf(allImagePaths, pdfPath);
 
-    // Move new images to "done"
-    await Promise.all(
-      images.map(async (img) => {
-        const from = path.join(sourceDir, img);
-        const to = path.join(destDir, img);
-        if (fs.existsSync(from)) {
-          await fsPromises.rename(from, to);
-        }
-      })
-    );
-
-    // Insert new image records
-    const newFileRecords = images.map((name) => ({
-      file_name: name,
+    // Save new file records to database
+    const newFileRecords = images.map((file_name) => ({
+      file_name,
       pdfId: pdfRecord.id,
     }));
     await PdfFileModel.bulkCreate(newFileRecords);
@@ -282,11 +393,10 @@ exports.editAddImgProcessedPdf = async (req, res) => {
       message: "PDF updated and database synced successfully.",
     });
   } catch (err) {
-    console.error("Error processing PDF:", err);
+    console.error("Error processing PDF:", err.stack || err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 exports.getAllPdfImages = async (req, res) => {
   try {
     const { images, pdfId } = req.query;
@@ -411,7 +521,14 @@ exports.RemoveImagesFromPdf = async (req, res) => {
     if (!pdfRecord) {
       return res.status(404).json({ error: "PDF record not found" });
     }
+    const pathRecord = await DataPathModel.findByPk(pdfRecord.pathId);
+    if (!pathRecord) {
+      return res.status(404).json({ error: "Path record not found" });
+    }
 
+    const sourceDir = path.join(pathRecord.image_Path, "done");
+    const pdfDir = pathRecord.pdf_Path;
+    const destDir = pathRecord.image_Path;
     // 2. Fetch image records to be removed
     const recordsToRemove = [];
     for (const imageId of images) {
@@ -420,9 +537,6 @@ exports.RemoveImagesFromPdf = async (req, res) => {
       });
       if (record) recordsToRemove.push(record);
     }
-
-    const sourceDir = path.join(os.homedir(), "Documents", "images", "done");
-    const destDir = path.join(os.homedir(), "Documents", "images");
 
     // 3. Move files back and delete DB records
     const movedFiles = [];
@@ -450,7 +564,7 @@ exports.RemoveImagesFromPdf = async (req, res) => {
     );
 
     const pdfName = pdfRecord.pdf_Name || `output-${Date.now()}`;
-    const pdfPath = path.join(sourceDir, `${pdfName}.pdf`); // overwrite original
+    const pdfPath = path.join(pdfDir, `${pdfName}.pdf`); // overwrite original
 
     await compressAndConvertImagesToPdf(imagePaths, pdfPath);
 

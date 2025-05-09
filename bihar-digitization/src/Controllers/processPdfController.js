@@ -5,7 +5,7 @@ const os = require("os");
 const compressAndConvertImagesToPdf = require("../Services/imageToPdf.js");
 const PdfModel = require("../Models/pdfModel");
 const PdfFileModel = require("../Models/pdfFileModel.js");
-const sharp = require("sharp");
+// const sharp = require("sharp");
 const Jimp = require("jimp");
 const DataPathModel = require("../Models/dataPathModel.js");
 // exports.processPdf = async (req, res) => {
@@ -407,7 +407,37 @@ exports.getAllPdfImages = async (req, res) => {
   } catch (error) {}
 };
 
-exports.convertImg = (req, res) => {
+// exports.convertImg = (req, res) => {
+//   const imageName = req.params.imageName;
+//   const dir = req.query.dir;
+
+//   if (!dir) {
+//     return res.status(400).send("Directory path is required in query string");
+//   }
+
+//   // Sanitize and resolve full image path
+//   const imagePath = path.resolve(dir, imageName);
+
+//   if (!fs.existsSync(imagePath)) {
+//     return res.status(404).send("Image not found");
+//   }
+
+//   sharp(imagePath)
+//     .resize(150)
+//     .toBuffer()
+//     .then((buffer) => {
+//       res.set("Content-Type", "image/jpeg");
+//       res.send(buffer);
+//     })
+//     .catch((err) => {
+//       console.error("Thumbnail error:", err);
+//       res.status(500).send("Failed to create thumbnail");
+//     });
+// };
+
+
+
+exports.convertImg = async (req, res) => {
   const imageName = req.params.imageName;
   const dir = req.query.dir;
 
@@ -415,25 +445,27 @@ exports.convertImg = (req, res) => {
     return res.status(400).send("Directory path is required in query string");
   }
 
-  // Sanitize and resolve full image path
   const imagePath = path.resolve(dir, imageName);
 
   if (!fs.existsSync(imagePath)) {
     return res.status(404).send("Image not found");
   }
 
-  sharp(imagePath)
-    .resize(150)
-    .toBuffer()
-    .then((buffer) => {
-      res.set("Content-Type", "image/jpeg");
-      res.send(buffer);
-    })
-    .catch((err) => {
-      console.error("Thumbnail error:", err);
-      res.status(500).send("Failed to create thumbnail");
-    });
+  try {
+    const image = await Jimp.read(imagePath);
+    image.resize(150, Jimp.AUTO); // maintain aspect ratio
+
+    const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+    res.set("Content-Type", Jimp.MIME_JPEG);
+    res.send(buffer);
+  } catch (err) {
+    console.error("Thumbnail error:", err);
+    res.status(500).send("Failed to create thumbnail");
+  }
 };
+
+
+
 exports.viewImg = (req, res) => {
   const imageName = req.params.imageName;
   const dir = req.query.dir;

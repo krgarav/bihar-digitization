@@ -1,4 +1,11 @@
-const { app, BrowserWindow, ipcMain, Menu, dialog } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  dialog,
+  nativeTheme,
+} = require("electron");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -15,15 +22,16 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      enableBlinkFeatures: "CSSColorAdjust",
     },
   });
-
+  nativeTheme.themeSource = "dark";
   // Vite dev or dist
   // if (process.env.NODE_ENV === "development") {
   win.loadURL("http://localhost:5173").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   Menu.setApplicationMenu(null);
 }
 

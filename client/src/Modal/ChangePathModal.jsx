@@ -200,6 +200,7 @@ const ChangePathModal = ({ show, onClose, event }) => {
                   onChange={() => {
                     setChangePath(true);
                     setSwitchImage(false);
+                    setCurrentImage(null);
                   }}
                   className="hidden peer"
                 />
@@ -260,7 +261,15 @@ const ChangePathModal = ({ show, onClose, event }) => {
 
           {switchImage && (
             <div className="w-full  h-96 overflow-y-auto bg-gray-800 rounded-xl shadow-md">
-              <ul className="divide-y divide-gray-700">{RenDerAllPAths}</ul>
+              <ul className="divide-y divide-gray-700">
+                {RenDerAllPAths.length > 0 ? (
+                  RenDerAllPAths
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400 text-sm italic">
+                    No path saved
+                  </div>
+                )}
+              </ul>
             </div>
           )}
 
@@ -273,6 +282,19 @@ const ChangePathModal = ({ show, onClose, event }) => {
                 className="ml-4 px-5 py-2.5 text-sm font-medium text-white rounded-lg transition bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 Save Path
+              </button>
+            )}
+            {!currentImage && changePath && (
+              <button
+                type="button"
+                onClick={() => {
+                  setChangePath(false);
+                  setSwitchImage(true);
+                  setCurrentImage(null);
+                }}
+                className="ml-4 px-5 py-2.5 text-sm font-medium text-white rounded-lg transition bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+              >
+                Return to path selection
               </button>
             )}
             {currentImage && (

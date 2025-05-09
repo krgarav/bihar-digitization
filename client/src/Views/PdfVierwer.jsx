@@ -8,6 +8,7 @@ const PdfViewer = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
+  const [trigger, setTrigger] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
@@ -90,7 +91,7 @@ const PdfViewer = () => {
     if (page > 1) {
       fetchImages(page);
     }
-  }, [page]);
+  }, [page, trigger]);
 
   const handleImageClick = async (imgName) => {
     try {
@@ -121,61 +122,77 @@ const PdfViewer = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-900 ">
-      <h2 className="text-2xl font-bold mb-4 text-white">📚 Available PDFs</h2>
+    <>
+      <div className="p-6 bg-gray-900 ">
+        <h2 className="text-2xl font-bold mb-4 text-white">
+          📚 Available PDFs
+        </h2>
 
-      {/* Scrollable grid container */}
-      <div className="h-[80vh] overflow-y-auto pr-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {images.map((img, index) => {
-            // const isFirst = index === 0;
-            const isLast = index === images.length - 1;
-            return (
-              <div
-                ref={ isLast ? lastPdfRef : null}
-                key={index}
-                className="cursor-pointer border-2 rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-lg relative bg-gray-800 border-gray-200"
-                onClick={() => handleImageClick(img.pdf_Name)}
-              >
+        {/* Scrollable grid container */}
+        <div className="h-[80vh] overflow-y-auto pr-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {images.map((img, index) => {
+              // const isFirst = index === 0;
+              const isLast = index === images.length - 1;
+              return (
                 <div
-                  className="absolute top-2 right-2 text-blue-500 hover:text-blue-700 cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditClick(img);
-                  }}
+                  ref={isLast ? lastPdfRef : null}
+                  key={index}
+                  className="cursor-pointer border-2 rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-lg relative bg-gray-800 border-gray-200"
+                  onClick={() => handleImageClick(img.pdf_Name)}
                 >
-                  <FaEdit className="text-lg" />
-                </div>
-
-                <div className="flex justify-center mb-4 text-red-600 text-5xl">
-                  <AiFillFilePdf />
-                </div>
-
-                <div className="text-center">
-                  <p
-                    className="text-sm font-medium text-gray-200 truncate"
-                    title={img.pdf_Name}
+                  <div
+                    className="absolute top-2 right-2 text-blue-500 hover:text-blue-700 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("ghgk");
+                      handleEditClick(img);
+                    }}
                   >
-                    {img.pdf_Name}.pdf
-                  </p>
+                    <FaEdit className="text-lg" />
+                  </div>
+
+                  <div className="flex justify-center mb-4 text-red-600 text-5xl">
+                    <AiFillFilePdf />
+                  </div>
+
+                  <div className="text-center">
+                    <p
+                      className="text-sm font-medium text-gray-200 truncate"
+                      title={img.pdf_Name}
+                    >
+                      {img.pdf_Name}.pdf
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          {loading && (
+            <p className="text-center mt-4 text-gray-400">
+              Loading more PDFs...
+            </p>
+          )}
+
+          {!loading && !hasMore && images.length > 0 && (
+            <p className="text-center mt-4 text-green-400">
+              🎉 All PDFs loaded!
+            </p>
+          )}
+
+          {images.length === 0 && !loading && (
+            <div className="text-center text-gray-400">No PDFs available.</div>
+          )}
         </div>
-        {loading && (
-          <p className="text-center mt-4 text-gray-400">Loading more PDFs...</p>
-        )}
-
-        {!loading && !hasMore && images.length > 0 && (
-          <p className="text-center mt-4 text-green-400">🎉 All PDFs loaded!</p>
-        )}
-
-        {images.length === 0 && !loading && (
-          <div className="text-center text-gray-400">No PDFs available.</div>
-        )}
       </div>
-    </div>
+      <EditPdfModal
+        show={show}
+        selectedPdf={selectedPdf}
+        onClose={() => setShow(false)}
+        setTrigger={setTrigger}
+        trigger={trigger}
+      />
+    </>
   );
 };
 

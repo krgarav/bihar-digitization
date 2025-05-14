@@ -27,8 +27,11 @@ function createWindow() {
   });
   nativeTheme.themeSource = "dark";
   // Vite dev or dist
+  win.webContents.session.clearStorageData({
+    storages: ["localstorage"],
+  });
   // if (process.env.NODE_ENV === "development") {
-  win.loadURL("http://localhost:5173").catch((err) => {
+  win.loadURL("http://localhost:4000").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
   // win.webContents.openDevTools();
@@ -146,16 +149,15 @@ ipcMain.handle("get-image-list", async (event, offset = 0, limit = 50, dir) => {
   }
 });
 
-ipcMain.handle("search-images", async (event, query) => {
-  const dir = path.join(os.homedir(), "Documents", "images");
+ipcMain.handle("search-images", async (event, query, dirName) => {
   const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
 
   const scoreMatch = (filename, query) => {
-    const name = path.parse(filename).name.toLowerCase(); // no extension
+    const name = path.parse(filename).name.toLowerCase();
     query = query.toLowerCase();
     let score = 0;
 
-    if (name === query) return 999; // exact match gets highest priority
+    if (name === query) return 999;
 
     // Add basic fuzzy scoring
     for (let char of query) {
@@ -166,8 +168,14 @@ ipcMain.handle("search-images", async (event, query) => {
 
     return score;
   };
+
   try {
-    const files = fs.readdirSync(dir);
+    if (!fs.existsSync(dirName)) {
+      throw new Error(`Directory does not exist: ${dirName}`);
+    }
+
+    const files = fs.readdirSync(dirName);
+
     const imageFiles = files
       .filter((file) =>
         validExtensions.includes(path.extname(file).toLowerCase())
@@ -176,12 +184,13 @@ ipcMain.handle("search-images", async (event, query) => {
         name: file,
         score: scoreMatch(file, query),
       }))
-      .filter((item) => item.score > 0) // optional: exclude completely unrelated files
-      .sort((a, b) => b.score - a.score) // sort descending by score
-      .map((item) => item.name); // return only names
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((item) => item.name);
 
     return imageFiles;
   } catch (err) {
+    console.error("Error in search-images:", err.message);
     return { error: err.message };
   }
 });

@@ -1,9 +1,12 @@
 const Sequelize = require("sequelize");
-
+const path = require("path");
+const { app } = require("electron");
+// Get a safe path to store user data
+const dbPath = path.join(app.getPath("userData"), "database.sqlite");
 // SQLite database connection
 const sequelize = new Sequelize({
   dialect: "sqlite",
-  storage: "./database.sqlite", // or another path like ':memory:' for in-memory DB
+  storage: dbPath,
   logging: false,
 });
 

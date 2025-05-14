@@ -24,7 +24,12 @@ const AllImageViewer = () => {
         setSuggestions([]);
         return;
       }
-      const filenames = await window.api.searchImages(value); // get filenames from backend
+      const dirName = JSON.parse(localStorage.getItem("pathId"));
+      const filenames = await window.api.searchImages(
+        value,
+        dirName?.image_Path
+      ); // get filenames from backend
+      console.log(filenames);
       setSuggestions(filenames.slice(0, 5)); // just names for suggestions
     }, 1000);
   };
@@ -42,7 +47,6 @@ const AllImageViewer = () => {
         src: `http://localhost:4000/thumbnail/${item}?dir=${encodedUri}`,
       };
     });
-
     setDisplayedImages([obj, ...arr]);
   };
   return (
@@ -103,12 +107,14 @@ const AllImageViewer = () => {
           </div>
         )}
       </div>
-
       {/* Modal Component */}
       <NameModal
         show={show}
         selectedImages={selectedImages}
-        onClose={() => setShow(false)}
+        onClose={() => {
+          setShow(false);
+          setSelectedImages(new Set());
+        }}
         setTrigger={setTrigger}
         trigger={trigger}
       />

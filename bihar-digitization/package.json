@@ -1,7 +1,7 @@
 {
   "name": "bihar-digitization",
   "productName": "bihar-digitization",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "An Electron-based desktop application for creating, editing, and exporting PDF documents easily and efficiently.",
   "main": "src/index.js",
   "type": "commonjs",
@@ -25,6 +25,7 @@
     "jimp": "^0.16.1",
     "pdf-lib": "^1.17.1",
     "sequelize": "^6.37.7",
+    "sharp": "^0.34.1",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
@@ -36,22 +37,11 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.8.0",
     "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron/fuses": "^1.8.0",
-    "electron": "^22.3.3"
+    "electron": "^29.3.3"
   },
   "build": {
     "productName": "PDF Maker",
     "appId": "com.ios.pdfmaker",
-    "icon": "assets/icofile.ico",
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "ia32"
-          ]
-        }
-      ],
-      "asar": true
-    }
+    "icon": "assets/icofile.ico"
   }
 }

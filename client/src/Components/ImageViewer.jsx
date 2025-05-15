@@ -151,34 +151,6 @@ const ImageViewer = ({
   return (
     <>
       <div className="p-4  h-[65vh] overflow-y-auto">
-        {/* <div className="mb-4 max-w-md mx-auto relative">
-        <input
-          type="text"
-          placeholder="Search images by name..."
-          className="sticky top-0 w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
-        {suggestions.length > 0 && (
-          <ul
-            ref={searchRef}
-            className="absolute top-full left-0 w-full text-black bg-white border border-t-0 border-gray-300 rounded-b-lg shadow-md z-10"
-          >
-            {suggestions.map((name, index) => (
-              <li
-                key={index}
-                onClick={() => {
-                  handleSearchClick(name);
-                  setSuggestions([]);
-                }}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-              >
-                {name}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {loading
             ? Array.from({ length: 10 }).map((_, index) => (

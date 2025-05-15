@@ -31,10 +31,10 @@ function createWindow() {
     storages: ["localstorage"],
   });
   // if (process.env.NODE_ENV === "development") {
-  win.loadURL("http://localhost:4000").catch((err) => {
+  win.loadURL("http://localhost:5173").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
-  // win.webContents.openDevTools();
+  win.webContents.openDevTools();
   Menu.setApplicationMenu(null);
 }
 
@@ -209,4 +209,37 @@ ipcMain.handle("select-folder", async () => {
   return await dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
+});
+const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+
+function getSortedImageListFromDir(dir) {
+  const normalizedDir = path.normalize(decodeURIComponent(dir));
+  const files = fs.readdirSync(normalizedDir);
+  return files
+    .filter((file) =>
+      validExtensions.includes(path.extname(file).toLowerCase())
+    )
+    .sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+    );
+}
+
+ipcMain.handle("get-prev-image", (event, currentImage, dirName) => {
+  if (!dirName || !currentImage) return null;
+  const imageList = getSortedImageListFromDir(dirName);
+  const index = imageList.indexOf(currentImage);
+  if (index > 0) {
+    return imageList[index - 1];
+  }
+  return null;
+});
+
+ipcMain.handle("get-next-image", (event, currentImage, dirName) => {
+  if (!dirName || !currentImage) return null;
+  const imageList = getSortedImageListFromDir(dirName);
+  const index = imageList.indexOf(currentImage);
+  if (index >= 0 && index < imageList.length - 1) {
+    return imageList[index + 1];
+  }
+  return null;
 });

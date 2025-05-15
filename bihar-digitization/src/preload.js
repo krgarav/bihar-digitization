@@ -11,4 +11,8 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("search-images", query, dirName),
   getDoneImageList: () => ipcRenderer.invoke("get-done-image-list"),
   selectFolder: () => ipcRenderer.invoke("select-folder"),
+  getPrevImage: (current, dir) =>
+    ipcRenderer.invoke("get-prev-image", current, dir),
+  getNextImage: (current, dir) =>
+    ipcRenderer.invoke("get-next-image", current, dir),
 });

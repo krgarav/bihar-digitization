@@ -216,6 +216,8 @@ const ImageViewer = ({
           setShowImageViewer(false);
         }}
         imageName={showImageViewerName}
+        selectedImages={selectedImages}
+        setSelectedImages={setSelectedImages}
       />
     </>
   );

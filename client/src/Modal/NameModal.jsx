@@ -53,8 +53,10 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
       console.error("Error saving images:", error);
       toast.error("Failed to create PDF.");
     } finally {
+      const btn = document.getElementById("modal-close-btn");
       setIsLoading(false);
       setPdfName(null);
+      btn?.click();
       onClose();
     }
   };

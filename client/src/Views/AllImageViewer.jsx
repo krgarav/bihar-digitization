@@ -99,6 +99,7 @@ const AllImageViewer = () => {
         {selectedImages.size > 0 && (
           <div className="flex justify-end">
             <button
+              id="pdfButton"
               onClick={saveHandler}
               className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg shadow-md transition duration-200"
             >

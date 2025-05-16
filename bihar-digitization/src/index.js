@@ -31,7 +31,7 @@ function createWindow() {
     storages: ["localstorage"],
   });
   // if (process.env.NODE_ENV === "development") {
-  win.loadURL("http://localhost:5173").catch((err) => {
+  win.loadURL("http://localhost:4000").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
   win.webContents.openDevTools();

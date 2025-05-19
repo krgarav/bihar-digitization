@@ -34,7 +34,7 @@ function createWindow() {
   win.loadURL("http://localhost:4000").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   Menu.setApplicationMenu(null);
 }
 

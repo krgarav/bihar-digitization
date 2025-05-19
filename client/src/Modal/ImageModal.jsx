@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { ImageViewer as ImgView } from "react-iv-viewer";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
@@ -12,6 +12,13 @@ const ImageModal = ({
 }) => {
   const [currentImage, setCurrentImage] = useState(null);
   const [isSelected, setIsSelected] = useState(false);
+  const viewerRef = useRef(null);
+  useEffect(() => {
+    if (viewerRef.current) {
+      // Use the internal API if exposed
+      viewerRef.current.zoom(0.5); // May differ by version
+    }
+  }, [currentImage]);
   useEffect(() => {
     setIsSelected(selectedImages.has(currentImage));
   }, [currentImage, selectedImages]);
@@ -64,9 +71,11 @@ const ImageModal = ({
           {/* Image */}
           <div className="flex flex-col items-center justify-center w-full h-full">
             <ImgView
+              ref={viewerRef}
               img={`http://localhost:4000/view-image/${currentImage}?dir=${dir["image_Path"]}`}
               width="100%"
               height="100%"
+              snapView={false}
             />
             <div
               className="absolute top-2 right-2 cursor-pointer"

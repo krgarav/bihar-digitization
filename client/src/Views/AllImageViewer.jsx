@@ -11,7 +11,8 @@ const AllImageViewer = () => {
   const [displayedImages, setDisplayedImages] = useState([]); // what’s currently rendered
   const debounceTimeout = useRef(null);
   const saveHandler = async () => {
-    setShow(true);
+
+      setShow(true);
   };
   const handleSearchChange = (value) => {
     setSearchQuery(value);

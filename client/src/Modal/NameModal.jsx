@@ -4,6 +4,7 @@ import { ImageViewer } from "react-iv-viewer";
 import "react-iv-viewer/dist/react-iv-viewer.css";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { toast } from "react-toastify";
+import LazyImageViewer from "../Components/LazyLoader";
 const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const [pdfName, setPdfName] = React.useState(null);
   const [imageArray, setImageArray] = React.useState([]);
@@ -18,6 +19,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const handleNext = () => {
     setCurrentIndex((prev) => (prev === imageArray.length - 1 ? 0 : prev + 1));
   };
+
   useEffect(() => {
     if (selectedImages) {
       setImageArray(Array.from(selectedImages));
@@ -124,7 +126,15 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
               <ImageViewer
                 img={`http://localhost:4000/view-image/${imageArray[currentIndex]}?dir=${dir["image_Path"]}`}
                 width="640px"
+                height="100%"
+                snapView={false}
               />
+
+              // <LazyImageViewer
+              //   currentIndex={currentIndex}
+              //   imageArray={imageArray}
+              //   dir={dir}
+              // />
             )}
             <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
               {imageArray[currentIndex]}

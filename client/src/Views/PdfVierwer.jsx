@@ -123,42 +123,109 @@ const PdfViewer = () => {
 
   return (
     <>
-      <div className="p-6 bg-gray-900 ">
-        <h2 className="text-2xl font-bold mb-4 text-white">
+      <div
+        style={{
+          padding: "1.5rem",
+          backgroundColor: "#1f2937", // gray-900
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            marginBottom: "1rem",
+            color: "#ffffff",
+          }}
+        >
           📚 Available PDFs
         </h2>
 
         {/* Scrollable grid container */}
-        <div className="h-[80vh] overflow-y-auto pr-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div
+          style={{
+            height: "80vh",
+            overflowY: "auto",
+            paddingRight: "0.5rem",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(min(100%, 220px), 1fr))",
+              gap: "1rem",
+            }}
+          >
             {images.map((img, index) => {
-              // const isFirst = index === 0;
               const isLast = index === images.length - 1;
               return (
                 <div
                   ref={isLast ? lastPdfRef : null}
                   key={index}
-                  className="cursor-pointer border-2 rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-lg relative bg-gray-800 border-gray-200"
+                  style={{
+                    cursor: "pointer",
+                    border: "2px solid #e5e7eb", // border-gray-200
+                    borderRadius: "0.5rem",
+                    padding: "1rem",
+                    backgroundColor: "#1f2937", // gray-800
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                    transition: "box-shadow 0.2s",
+                    position: "relative",
+                  }}
                   onClick={() => handleImageClick(img.pdf_Name)}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.boxShadow =
+                      "0 10px 15px rgba(0,0,0,0.3)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.boxShadow =
+                      "0 1px 2px rgba(0,0,0,0.05)")
+                  }
                 >
                   <div
-                    className="absolute top-2 right-2 text-blue-500 hover:text-blue-700 cursor-pointer"
+                    style={{
+                      position: "absolute",
+                      top: "0.5rem",
+                      right: "0.5rem",
+                      color: "#3b82f6", // text-blue-500
+                      cursor: "pointer",
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log("ghgk");
                       handleEditClick(img);
                     }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "#1d4ed8")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "#3b82f6")
+                    }
                   >
-                    <FaEdit className="text-lg" />
+                    <FaEdit style={{ fontSize: "1.125rem" }} />
                   </div>
 
-                  <div className="flex justify-center mb-4 text-red-600 text-5xl">
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginBottom: "1rem",
+                      color: "#dc2626", // text-red-600
+                      fontSize: "3rem",
+                    }}
+                  >
                     <AiFillFilePdf />
                   </div>
 
-                  <div className="text-center">
+                  <div style={{ textAlign: "center" }}>
                     <p
-                      className="text-sm font-medium text-gray-200 truncate"
+                      style={{
+                        fontSize: "0.875rem",
+                        fontWeight: "500",
+                        color: "#e5e7eb", // text-gray-200
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
                       title={img.pdf_Name}
                     >
                       {img.pdf_Name}.pdf
@@ -168,23 +235,44 @@ const PdfViewer = () => {
               );
             })}
           </div>
+
           {loading && (
-            <p className="text-center mt-4 text-gray-400">
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: "1rem",
+                color: "#9ca3af", // text-gray-400
+              }}
+            >
               Loading more PDFs...
             </p>
           )}
 
           {!loading && !hasMore && images.length > 0 && (
-            <p className="text-center mt-4 text-green-400">
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: "1rem",
+                color: "#34d399", // text-green-400
+              }}
+            >
               🎉 All PDFs loaded!
             </p>
           )}
 
           {images.length === 0 && !loading && (
-            <div className="text-center text-gray-400">No PDFs available.</div>
+            <div
+              style={{
+                textAlign: "center",
+                color: "#9ca3af", // text-gray-400
+              }}
+            >
+              No PDFs available.
+            </div>
           )}
         </div>
       </div>
+
       <EditPdfModal
         show={show}
         selectedPdf={selectedPdf}

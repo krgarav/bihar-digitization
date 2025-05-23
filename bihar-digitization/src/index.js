@@ -15,9 +15,14 @@ process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
 });
 function createWindow() {
+  const { screen } = require("electron");
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+
   const win = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    width: 1280,
+    height: 720,
+    fullscreen: width === 1280 && height === 720, // auto fullscreen if resolution is 720p
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -25,16 +30,19 @@ function createWindow() {
       enableBlinkFeatures: "CSSColorAdjust",
     },
   });
+
   nativeTheme.themeSource = "dark";
-  // Vite dev or dist
+
   win.webContents.session.clearStorageData({
     storages: ["localstorage"],
   });
-  // if (process.env.NODE_ENV === "development") {
+
   win.loadURL("http://localhost:4000").catch((err) => {
     console.error("Failed to load Vite dev server:", err);
   });
-  // win.webContents.openDevTools();
+  win.webContents.on("did-finish-load", () => {
+    win.webContents.setZoomFactor(0.7); // 10% zoom
+  });
   Menu.setApplicationMenu(null);
 }
 

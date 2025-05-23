@@ -11,6 +11,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(false);
   const dir = JSON.parse(localStorage.getItem("pathId"));
+  const showDarkMode = true;
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? imageArray.length - 1 : prev - 1));
@@ -68,25 +69,86 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
       id="default-modal"
       tabIndex="-1"
       aria-hidden={!show}
-      className={`fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full overflow-y-auto overflow-x-hidden backdrop-blur-sm bg-black/30 ${
-        show ? "" : "hidden"
-      }`}
+      style={{
+        position: "fixed",
+        top: 0,
+        right: 0,
+        left: 0,
+        zIndex: 50,
+        display: show ? "flex" : "none",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+        height: "calc(100% - 1rem)",
+        maxHeight: "100%",
+        overflowY: "auto",
+        overflowX: "hidden",
+        backdropFilter: "blur(4px)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
+      }}
     >
-      <div className="relative p-4 w-full max-w-2xl max-h-full">
-        <div className="relative bg-white rounded-xl shadow-lg dark:bg-gray-800 transition-all">
+      <div
+        style={{
+          position: "relative",
+          padding: "1rem",
+          width: "100%",
+          maxWidth: "42rem",
+          maxHeight: "100%",
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            backgroundColor: showDarkMode ? "#1f2937" : "white",
+            borderRadius: "0.75rem",
+            boxShadow: "0 10px 15px rgba(0,0,0,0.1)",
+            transition: "all 0.3s ease",
+          }}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-200 dark:border-gray-600 rounded-t">
-            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "1.25rem",
+              borderBottom: "1px solid",
+              borderColor: showDarkMode ? "#4b5563" : "#e5e7eb",
+              borderTopLeftRadius: "0.75rem",
+              borderTopRightRadius: "0.75rem",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 600,
+                color: showDarkMode ? "#fff" : "#1f2937",
+              }}
+            >
               Name Your PDF
             </h3>
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-white rounded-full p-2 transition"
               aria-label="Close modal"
+              style={{
+                color: "#9ca3af",
+                borderRadius: "9999px",
+                padding: "0.5rem",
+                transition: "color 0.2s",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                const path = e.currentTarget.querySelector("path");
+                if (path) path.style.stroke = "red";
+              }}
+              onMouseLeave={(e) => {
+                const path = e.currentTarget.querySelector("path");
+                if (path) path.style.stroke = "#9ca3af";
+              }}
             >
               <svg
-                className="w-4 h-4"
+                style={{ width: "1rem", height: "1rem" }}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 14 14"
@@ -103,25 +165,54 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
           </div>
 
           {/* Body */}
-          <div className="p-4 md:p-6 space-y-4">
+          <div
+            style={{
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
             <label
               htmlFor="pdf-name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: 500,
+                color: showDarkMode ? "#d1d5db" : "#374151",
+              }}
             >
               PDF Name
             </label>
             <input
               id="pdf-name"
               placeholder="e.g. Project_Report_2025"
-              className="w-full px-4 py-2 text-sm text-gray-800 dark:text-white placeholder-gray-400 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-500 dark:focus:ring-blue-600"
+              style={{
+                width: "100%",
+                padding: "0.5rem 1rem",
+                fontSize: "0.875rem",
+                color: showDarkMode ? "#fff" : "#1f2937",
+                backgroundColor: showDarkMode ? "#374151" : "#f9fafb",
+                border: "1px solid",
+                borderColor: showDarkMode ? "#4b5563" : "#d1d5db",
+                borderRadius: "0.375rem",
+                outline: "none",
+                transition: "box-shadow 0.2s",
+              }}
               onChange={(e) => setPdfName(e.target.value)}
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: showDarkMode ? "#9ca3af" : "#6b7280",
+              }}
+            >
               Please enter a name for your PDF file. It will be used when saving
               the document.
             </p>
           </div>
-          <div className="relative w-[500px]">
+
+          {/* Image Preview */}
+          <div style={{ position: "relative", width: "500px", margin: "0" }}>
             {imageArray.length > 0 && (
               <ImageViewer
                 img={`http://localhost:4000/view-image/${imageArray[currentIndex]}?dir=${dir["image_Path"]}`}
@@ -129,47 +220,84 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
                 height="100%"
                 snapView={false}
               />
-
-              // <LazyImageViewer
-              //   currentIndex={currentIndex}
-              //   imageArray={imageArray}
-              //   dir={dir}
-              // />
             )}
-            <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
+            <p
+              style={{
+                fontSize: "0.75rem",
+                textAlign: "center",
+                color: showDarkMode ? "#9ca3af" : "#6b7280",
+                marginTop: "0.5rem",
+              }}
+            >
               {imageArray[currentIndex]}
             </p>
           </div>
+
           {/* Footer */}
-          <div className="flex items-center justify-between p-4 md:p-5 border-t border-gray-200 dark:border-gray-600">
-            {/* Centered Arrows */}
-            <div className="flex justify-center flex-grow gap-4">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "1.25rem",
+              borderTop: "1px solid",
+              borderColor: showDarkMode ? "#4b5563" : "#e5e7eb",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                justifyContent: "center",
+                flexGrow: 1,
+                color: showDarkMode ? "#d1d5db" : "#374151",
+              }}
+            >
               <button
                 onClick={handlePrev}
-                className="cursor-pointer bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.88)",
+                  padding: "0.5rem",
+                  borderRadius: "9999px",
+                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                  color: "#374151",
+                }}
               >
-                <FaArrowLeft size={20} />
+                <FaArrowLeft  size={20} />
               </button>
               <button
                 onClick={handleNext}
-                className="cursor-pointer bg-white bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full shadow text-gray-700"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.87)",
+                  padding: "0.5rem",
+                  borderRadius: "9999px",
+                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                  color: "#374151",
+                }}
               >
                 <FaArrowRight size={20} />
               </button>
             </div>
 
-            {/* Save Button aligned right */}
             <button
               type="button"
-              className={`ml-4 px-5 py-2.5 text-sm font-medium text-white rounded-lg transition cursor-pointer duration-200
-    ${
-      isLoading
-        ? "bg-blue-400 cursor-not-allowed"
-        : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-    }
-  `}
               onClick={handleSave}
               disabled={isLoading}
+              style={{
+                marginLeft: "1rem",
+                padding: "0.625rem 1.25rem",
+                fontSize: "0.875rem",
+                fontWeight: 500,
+                color: "#fff",
+                borderRadius: "0.5rem",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                backgroundColor: isLoading
+                  ? "#60a5fa"
+                  : showDarkMode
+                  ? "#2563eb"
+                  : "#1d4ed8",
+                transition: "background-color 0.2s",
+              }}
             >
               {isLoading ? "Saving PDF..." : "Save PDF"}
             </button>

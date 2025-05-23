@@ -150,16 +150,52 @@ const ImageViewer = ({
 
   return (
     <>
-      <div className="p-4  h-[65vh] overflow-y-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div
+        style={{
+          padding: "1rem",
+          height: "65vh",
+          overflowY: "auto",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "1rem",
+          }}
+        >
           {loading
             ? Array.from({ length: 10 }).map((_, index) => (
                 <div
                   key={index}
-                  className="flex flex-col items-center border p-2 rounded shadow animate-pulse"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    border: "1px solid #ccc",
+                    padding: "0.5rem",
+                    borderRadius: "0.5rem",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                    animation: "pulse 1.5s infinite",
+                  }}
                 >
-                  <div className="relative w-full h-40 bg-gray-300 rounded"></div>
-                  <div className="mt-2 w-3/4 h-4 bg-gray-300 rounded"></div>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "10rem",
+                      backgroundColor: "#e5e7eb",
+                      borderRadius: "0.5rem",
+                    }}
+                  ></div>
+                  <div
+                    style={{
+                      marginTop: "0.5rem",
+                      width: "75%",
+                      height: "1rem",
+                      backgroundColor: "#e5e7eb",
+                      borderRadius: "0.5rem",
+                    }}
+                  ></div>
                 </div>
               ))
             : displayedImages.map((img, index) => {
@@ -167,31 +203,68 @@ const ImageViewer = ({
                 return (
                   <div
                     key={index}
-                    className="flex flex-col items-center border p-2 rounded shadow hover:shadow-lg cursor-pointer"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      border: "1px solid #ccc",
+                      padding: "0.5rem",
+                      borderRadius: "0.5rem",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                      cursor: "pointer",
+                    }}
                     onClick={() => handleImageViewer(img.name)}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.boxShadow =
+                        "0 4px 12px rgba(0,0,0,0.15)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.boxShadow =
+                        "0 1px 3px rgba(0,0,0,0.1)")
+                    }
                   >
-                    <div className="relative">
+                    <div style={{ position: "relative", width: "100%" }}>
                       <img
                         src={img.src}
                         alt={img.name}
-                        className="w-full h-40 object-cover rounded"
+                        style={{
+                          width: "100%",
+                          height: "10rem",
+                          objectFit: "contain",
+                          borderRadius: "0.5rem",
+                        }}
                       />
                       <div
-                        className="absolute top-2 right-2 cursor-pointer"
+                        style={{
+                          position: "absolute",
+                          top: "0.5rem",
+                          right: "0.5rem",
+                          cursor: "pointer",
+                        }}
                         onClick={(event) => handleImageClick(event, img.name)}
                       >
                         {isSelected ? (
                           <FaCheckCircle
                             color="green"
-                            className="text-green-500 text-xl"
+                            style={{ fontSize: "1.25rem" }}
                           />
                         ) : (
-                          <FaRegCircle className="text-gray-500 text-xl" />
+                          <FaRegCircle
+                            style={{ color: "#6b7280", fontSize: "1.25rem" }}
+                          />
                         )}
                       </div>
                     </div>
                     <div
-                      className="mt-2 text-sm text-center truncate w-full"
+                      style={{
+                        marginTop: "0.5rem",
+                        fontSize: "0.875rem",
+                        textAlign: "center",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        width: "100%",
+                      }}
                       title={img.name}
                     >
                       {img.name}
@@ -203,13 +276,20 @@ const ImageViewer = ({
 
         <div
           ref={loaderRef}
-          className="h-10 col-span-4 flex justify-center items-center"
+          style={{
+            height: "2.5rem",
+            gridColumn: "span 4",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
           {loadedCount < allImages.length && (
             <span>Loading more images...</span>
           )}
         </div>
       </div>
+
       <ImageModal
         isOpen={showImageViewer}
         onClose={() => {

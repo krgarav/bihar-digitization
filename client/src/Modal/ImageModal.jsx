@@ -53,23 +53,70 @@ const ImageModal = ({
   };
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center ">
-      <div className="relative bg-blue-900 rounded-2xl shadow-xl p-4 w-full max-w-5xl h-[80vh] flex flex-col">
-        {/* Close Button */}
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        backgroundColor: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          backgroundColor: "#1e3a8a",
+          borderRadius: "1rem",
+          boxShadow: "0 10px 15px rgba(0,0,0,0.2)",
+          padding: "1rem",
+          width: "100%",
+          maxWidth: "80rem",
+          height: "80vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <button
-          id="modal-close-btn"
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-300 hover:text-red-500 text-2xl font-bold focus:outline-none cursor-pointer"
+          style={{
+            position: "absolute",
+            top: "0.5rem",
+            right: "0.5rem",
+            color: "#d1d5db",
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            cursor: "pointer",
+            background: "none",
+            border: "none",
+          }}
         >
           &times;
         </button>
 
-        {/* Image Viewer with Arrows */}
-        <div className="flex-1 flex items-center justify-center relative mt-7 overflow-hidden">
-          {/* Left Arrow */}
-
-          {/* Image */}
-          <div className="flex flex-col items-center justify-center w-full h-full">
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+            marginTop: "1.75rem",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              height: "100%",
+            }}
+          >
             <ImgView
               ref={viewerRef}
               img={`http://localhost:4000/view-image/${currentImage}?dir=${dir["image_Path"]}`}
@@ -78,49 +125,97 @@ const ImageModal = ({
               snapView={false}
             />
             <div
-              className="absolute top-2 right-2 cursor-pointer"
+              style={{
+                position: "absolute",
+                top: "0.5rem",
+                right: "0.5rem",
+                cursor: "pointer",
+              }}
               onClick={(event) => handleImageClick(event, currentImage)}
             >
               {isSelected ? (
-                <FaCheckCircle
-                  color="green"
-                  className="text-green-500 text-xl"
-                />
+                <FaCheckCircle color="green" style={{ fontSize: "1.25rem" }} />
               ) : (
-                <FaRegCircle className="text-gray-500 text-xl" />
+                <FaRegCircle
+                  style={{ color: "#6b7280", fontSize: "1.25rem" }}
+                />
               )}
             </div>
-            <p className="text-center mt-2 text-white">{currentImage}</p>
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: "0.5rem",
+                color: "white",
+              }}
+            >
+              {currentImage}
+            </p>
           </div>
         </div>
 
-        {/* Footer with PDF Button */}
-        <div className="relative w-full">
-          {/* Arrows centered */}
-
-          <div className="flex justify-center items-center space-x-8 mt-4">
+        <div style={{ width: "100%", position: "relative" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "2rem",
+              marginTop: "1rem",
+            }}
+          >
             <button
               onClick={onPrevHandler}
-              className="flex cursor-pointer items-center text-white text-xl font-semibold hover:text-yellow-400 focus:outline-none"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "white",
+                fontSize: "1.25rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                background: "none",
+                border: "none",
+              }}
             >
-              <FiArrowLeft className="mr-2" />
+              <FiArrowLeft style={{ marginRight: "0.5rem" }} />
               Prev
             </button>
 
             <button
               onClick={onNextHandler}
-              className="flex cursor-pointer items-center text-white text-xl font-semibold hover:text-yellow-400 focus:outline-none"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "white",
+                fontSize: "1.25rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                background: "none",
+                border: "none",
+              }}
             >
               Next
-              <FiArrowRight className="ml-2" />
+              <FiArrowRight style={{ marginLeft: "0.5rem" }} />
             </button>
           </div>
 
-          {/* PDF Button aligned to the right */}
-          <div className="flex justify-end mt-4">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "1rem",
+            }}
+          >
             <button
               onClick={onCreatePDFHandler}
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded"
+              style={{
+                backgroundColor: "#10b981",
+                color: "white",
+                fontWeight: "600",
+                padding: "0.5rem 1rem",
+                borderRadius: "0.375rem",
+                border: "none",
+                cursor: "pointer",
+              }}
             >
               Create PDF
             </button>

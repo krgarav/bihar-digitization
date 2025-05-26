@@ -41,8 +41,9 @@ function createWindow() {
     console.error("Failed to load Vite dev server:", err);
   });
   win.webContents.on("did-finish-load", () => {
-    win.webContents.setZoomFactor(0.7); // 10% zoom
+    win.webContents.setZoomFactor(1); // 10% zoom
   });
+  // win.webContents.openDevTools();
   Menu.setApplicationMenu(null);
 }
 

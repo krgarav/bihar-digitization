@@ -5,13 +5,51 @@ import "react-iv-viewer/dist/react-iv-viewer.css";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { toast } from "react-toastify";
 import LazyImageViewer from "../Components/LazyLoader";
+import { useState } from "react";
+import { useRef } from "react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
-  const [pdfName, setPdfName] = React.useState(null);
-  const [imageArray, setImageArray] = React.useState([]);
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-  const [isLoading, setIsLoading] = React.useState(false);
   const dir = JSON.parse(localStorage.getItem("pathId"));
   const showDarkMode = true;
+
+  const [pdfName, setPdfName] = React.useState(null);
+  const [imageArray, setImageArray] = React.useState(selectedImages || []);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [isLoading, setIsLoading] = React.useState(false);
+  // Inside your component
+  const [showImageViewerUrl, setShowImageViewerUrl] = useState(false);
+  useEffect(() => {}, []);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Enter") {
+        // Your logic here
+        const btn = document.getElementById("pdf-save-btn");
+        if (btn) {
+          btn.click(); // Simulate a click on the save button
+        }
+
+        // You can trigger a function or state update here
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown); // cleanup
+    };
+  }, []);
+  useEffect(() => {
+    if (selectedImages) {
+      setImageArray(Array.from(selectedImages));
+    }
+  }, [selectedImages]);
+  useEffect(() => {
+    if (currentIndex >= 0) {
+      setShowImageViewerUrl(
+        `http://localhost:4000/view-image/${imageArray[currentIndex]}?dir=${dir["image_Path"]}`
+      );
+    }
+  }, [imageArray, currentIndex]); // run when inputs change
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? imageArray.length - 1 : prev - 1));
@@ -20,12 +58,6 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
   const handleNext = () => {
     setCurrentIndex((prev) => (prev === imageArray.length - 1 ? 0 : prev + 1));
   };
-
-  useEffect(() => {
-    if (selectedImages) {
-      setImageArray(Array.from(selectedImages));
-    }
-  }, [selectedImages]);
 
   const handleSave = async () => {
     if (!pdfName) {
@@ -212,15 +244,22 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
           </div>
 
           {/* Image Preview */}
-          <div style={{ position: "relative", width: "500px", margin: "0" }}>
-            {imageArray.length > 0 && (
-              <ImageViewer
-                img={`http://localhost:4000/view-image/${imageArray[currentIndex]}?dir=${dir["image_Path"]}`}
-                width="640px"
-                height="100%"
-                snapView={false}
-              />
-            )}
+          <div style={{ position: "relative", width: "100%", margin: "0" }}>
+            <TransformWrapper initialScale={1}>
+              <TransformComponent>
+                <img
+                  src={`http://localhost:4000/view-image/${imageArray[currentIndex]}?dir=${dir["image_Path"]}`}
+                  alt="Zoomable"
+                  width="640px"
+                  style={{
+                    height: "40vh",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                />
+              </TransformComponent>
+            </TransformWrapper>
+
             <p
               style={{
                 fontSize: "0.75rem",
@@ -263,7 +302,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
                   color: "#374151",
                 }}
               >
-                <FaArrowLeft  size={20} />
+                <FaArrowLeft size={20} />
               </button>
               <button
                 onClick={handleNext}
@@ -280,6 +319,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
             </div>
 
             <button
+              id="pdf-save-btn"
               type="button"
               onClick={handleSave}
               disabled={isLoading}

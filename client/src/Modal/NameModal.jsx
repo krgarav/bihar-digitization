@@ -93,10 +93,10 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
       }
       toast.error("Failed to create PDF.");
     } finally {
-      // const btn = document.getElementById("modal-close-btn");
+      const btn = document.getElementById("modal-close-btn");
       setIsLoading(false);
-      // setPdfName(null);
-      // btn?.click();
+      setPdfName(null);
+      btn?.click();
       // onClose();
     }
   };
@@ -222,7 +222,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
             </label>
             <input
               id="pdf-name"
-              placeholder="e.g. Project_Report_2025"
+              placeholder="Name your PDF file"
               style={{
                 width: "100%",
                 padding: "0.5rem 1rem",
@@ -235,6 +235,7 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
                 outline: "none",
                 transition: "box-shadow 0.2s",
               }}
+              value={pdfName??""}
               onChange={(e) => setPdfName(e.target.value)}
             />
             <p

@@ -59,7 +59,7 @@ exports.processPdf = async (req, res) => {
       return res.status(400).json({ error: "Images must be an array" });
     }
       // Check if a PDF with the same name already exists
-    const existingPdf = await PdfModel.findOne({ where: { pdf_Name: name } });
+    const existingPdf = await PdfModel.findOne({ where: { pdf_Name: name, pathId:pathId  } });
     if (existingPdf) {
       return res.status(400).json({ error: "A PDF with this name already exists." });
     }

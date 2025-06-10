@@ -80,6 +80,7 @@ const ImageModal = ({
         }}
       >
         <button
+        id="modal-close-btn"
           onClick={onClose}
           style={{
             position: "absolute",

@@ -1,7 +1,7 @@
 {
   "name": "bihar-digitization",
   "productName": "bihar-digitization",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "An Electron-based desktop application for creating, editing, and exporting PDF documents easily and efficiently.",
   "main": "src/index.js",
   "type": "commonjs",

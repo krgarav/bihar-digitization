@@ -10,6 +10,7 @@ const PdfModel = sequelize.define("pdfs", {
   pdf_Name: {
     type: Sequelize.STRING,
     allowNull: false,
+    unique: true,
   },
 });
 

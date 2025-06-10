@@ -58,6 +58,11 @@ exports.processPdf = async (req, res) => {
     if (!Array.isArray(images)) {
       return res.status(400).json({ error: "Images must be an array" });
     }
+      // Check if a PDF with the same name already exists
+    const existingPdf = await PdfModel.findOne({ where: { pdf_Name: name } });
+    if (existingPdf) {
+      return res.status(400).json({ error: "A PDF with this name already exists." });
+    }
     const srcFile = await DataPathModel.findByPk(pathId);
     const sourceDir = srcFile.image_Path;
     const enteredPdfPath = srcFile.pdf_Path;

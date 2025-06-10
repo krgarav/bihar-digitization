@@ -86,13 +86,18 @@ const NameModal = ({ show, selectedImages, onClose, setTrigger, trigger }) => {
       toast.success("PDF created successfully!");
     } catch (error) {
       console.error("Error saving images:", error);
+      setIsLoading(false);
+      if(error?.response?.data?.error){
+        toast.error(error.response.data.error);
+        return
+      }
       toast.error("Failed to create PDF.");
     } finally {
-      const btn = document.getElementById("modal-close-btn");
+      // const btn = document.getElementById("modal-close-btn");
       setIsLoading(false);
-      setPdfName(null);
-      btn?.click();
-      onClose();
+      // setPdfName(null);
+      // btn?.click();
+      // onClose();
     }
   };
 
